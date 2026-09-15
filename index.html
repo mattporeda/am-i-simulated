@@ -11,8 +11,12 @@
   --gold:#866313; --gold-dim:#C7A868; --gold-ink:#FBF3EA; --gold-soft:rgba(134,99,19,.14);
   --violet:#712791; --indigo:#3D2E9E;
   --peach:#F6E3F4; --pink:#EFC2E2;
+  --amber:#FAF6EC; --amber-dim:#F0E4C6; --amber-ink:#7A5C1E; --amber-sub:#8A6B2E;
   --verdant:#3F7A54; --verdant-soft:rgba(63,122,84,.14);
   --ember:#B33A2E; --ember-soft:rgba(179,58,46,.14);
+  --arg-for:#5F7A62; --arg-for-soft:rgba(95,122,98,.12);
+  --arg-against:#A85D4F; --arg-against-soft:rgba(168,93,79,.12);
+  --panel:#FAF4FA;
   --shadow:rgba(57,25,62,.16);
 }
 
@@ -64,19 +68,41 @@ h2.q em{color:var(--gold);font-style:italic;}
 .sigil-box{background:linear-gradient(155deg, rgba(113,39,145,.06), rgba(208,57,133,.04) 55%, rgba(253,250,252,.6) 100%);border:1px solid var(--line);border-radius:22px;padding:28px 20px 22px;margin:26px 0 20px;text-align:center;}
 .sigil{width:100%;max-width:230px;margin:0 auto 6px;}
 .sigil svg{width:100%;height:auto;display:block;}
-.dialval{font-family:'Fraunces',serif;font-style:italic;font-weight:600;font-size:1.9rem;color:var(--gold);margin-top:6px;}
-.dial-wrap{max-width:360px;margin:10px auto 0;}
-input[type=range]{width:100%;height:24px;background:transparent;-webkit-appearance:none;appearance:none;outline:none;margin:0;cursor:pointer;}
-input[type=range]::-webkit-slider-runnable-track{height:3px;background:linear-gradient(to right,var(--gold-dim),var(--line2));border-radius:3px;}
-input[type=range]::-moz-range-track{height:3px;background:var(--line2);border-radius:3px;}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;margin-top:-9px;width:22px;height:22px;border-radius:50%;background:var(--bg2);border:3px solid var(--gold);box-shadow:0 0 12px rgba(134,99,19,.3);cursor:grab;}
-input[type=range]::-moz-range-thumb{width:22px;height:22px;border:3px solid var(--gold);border-radius:50%;background:var(--bg2);box-shadow:0 0 12px rgba(134,99,19,.3);cursor:grab;}
-.ends{display:flex;justify-content:space-between;gap:12px;font-size:.85rem;color:var(--muted);font-family:'Cormorant Garamond',serif;font-style:italic;margin-top:4px;}
+.dialval{font-family:'Jost',sans-serif;font-weight:500;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted2);margin-bottom:10px;}
+.dial-wrap{max-width:360px;margin:10px auto 0;position:relative;}
+input[type=range]{width:100%;height:34px;background:transparent;-webkit-appearance:none;appearance:none;outline:none;margin:0;cursor:pointer;position:relative;z-index:2;}
+input[type=range]::-webkit-slider-runnable-track{height:5px;background:linear-gradient(to right,var(--gold-dim),var(--line2));border-radius:3px;}
+input[type=range]::-moz-range-track{height:5px;background:linear-gradient(to right,var(--gold-dim),var(--line2));border-radius:3px;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;margin-top:-13px;width:31px;height:31px;border-radius:50%;background:radial-gradient(circle at 35% 32%,#fff,var(--bg2) 60%);border:3px solid var(--gold);box-shadow:0 2px 10px rgba(57,25,62,.25);cursor:grab;transition:transform .12s;}
+input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.08);}
+input[type=range]::-moz-range-thumb{width:25px;height:25px;border-radius:50%;background:radial-gradient(circle at 35% 32%,#fff,var(--bg2) 60%);border:3px solid var(--gold);box-shadow:0 2px 10px rgba(57,25,62,.25);cursor:grab;}
+/* Glow lives on a real element positioned over the thumb's default (50%) resting spot —
+   animating box-shadow on the range-thumb pseudo-element itself does not render reliably
+   across browser engines, so the pulse is a separate absolutely-positioned div instead. */
+.dial-glow{position:absolute;left:50%;top:17px;width:31px;height:31px;border-radius:50%;transform:translate(-50%,-50%);pointer-events:none;z-index:1;animation:dialPulse 1.9s ease-out infinite;transition:opacity .3s;}
+.dial-glow.gone{opacity:0;}
+@keyframes dialPulse{
+  0%{box-shadow:0 0 0 0 rgba(134,99,19,.55);}
+  70%{box-shadow:0 0 0 16px rgba(134,99,19,0);}
+  100%{box-shadow:0 0 0 0 rgba(134,99,19,0);}
+}
+@media (prefers-reduced-motion:reduce){ .dial-glow{ animation:none; box-shadow:0 0 0 6px rgba(134,99,19,.22); } }
+.dragtip{text-align:center;font-family:'Jost',sans-serif;font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);opacity:.85;margin:2px 0 0;transition:opacity .3s;}
+.dragtip-top{margin:0 0 14px;}
+.dragtip.gone{opacity:0;height:0;margin:0;overflow:hidden;}
+.dragtip .arrow{display:inline-block;}
+.dragtip .arrow.l{animation:dragNudgeL 1.6s ease-in-out infinite;}
+.dragtip .arrow.r{animation:dragNudgeR 1.6s ease-in-out infinite .15s;}
+@keyframes dragNudgeL{ 0%,100%{transform:translateX(0);} 50%{transform:translateX(-3px);} }
+@keyframes dragNudgeR{ 0%,100%{transform:translateX(0);} 50%{transform:translateX(3px);} }
+@media (prefers-reduced-motion:reduce){ .dragtip .arrow{animation:none;} }
+.ends{display:flex;justify-content:space-between;gap:12px;font-size:.85rem;font-weight:500;color:var(--ink);font-family:'Cormorant Garamond',serif;font-style:italic;margin-top:4px;}
 .ends span{max-width:48%;}
 .ends span:last-child{text-align:right;}
-.translate{margin:0 0 28px;padding:18px 22px;border-radius:16px;background:linear-gradient(135deg, var(--peach), var(--pink));}
-.translate p{margin:0;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1.08rem;color:#3D1743;}
-.translate b{font-weight:700;color:#5C1655;font-style:normal;}
+.translate{margin:0 0 28px;padding:18px 22px;border-radius:16px;background:linear-gradient(135deg, var(--amber), var(--amber-dim));text-align:center;}
+.translate .ratio{font-family:'Fraunces',serif;font-style:italic;font-weight:600;font-size:1.9rem;color:var(--amber-ink);line-height:1.1;}
+.translate .ratio-sub{font-family:'Jost',sans-serif;font-size:.76rem;letter-spacing:.02em;color:var(--amber-sub);margin-top:8px;line-height:1.5;}
+.translate .ratio-sub b{color:var(--amber-ink);}
 
 .choices{display:flex;flex-direction:column;gap:10px;max-width:400px;margin:16px auto 0;}
 .choice{text-align:left;border:1px solid var(--line);background:rgba(113,39,145,.035);border-radius:14px;padding:14px 18px;cursor:pointer;color:var(--ink);font-size:1rem;font-family:'Cormorant Garamond',serif;transition:border-color .15s,background .15s;}
@@ -85,27 +111,35 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:3px solid var(
 .choice.on{border-color:var(--gold);background:linear-gradient(135deg, rgba(113,39,145,.08), rgba(208,57,133,.06));}
 .choice.on b{color:var(--gold);}
 
-.facts{margin-top:28px;}
-.facts .flabel,.args-label{font-family:'Jost',sans-serif;font-weight:500;font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted2);margin:0 0 14px;}
-.facts ul{margin:0;padding:0;list-style:none;display:grid;gap:14px;}
-.facts li{position:relative;font-size:1rem;color:var(--muted);padding-left:18px;font-family:'Cormorant Garamond',serif;}
-.facts li::before{content:"";position:absolute;left:0;top:.55em;width:6px;height:6px;border-radius:50%;background:var(--gold);opacity:.85;}
-.facts li b{color:var(--ink);font-weight:600;}
 .fact{margin-top:18px;font-size:1rem;color:var(--muted);padding-left:14px;border-left:2px solid var(--line);font-family:'Cormorant Garamond',serif;}
 .fact b{color:var(--ink);font-weight:600;}
 
-details{margin-top:22px;border-top:1px solid var(--line);}
-summary{cursor:pointer;padding:15px 0;font-family:'Jost',sans-serif;font-weight:500;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted2);list-style:none;display:flex;align-items:center;gap:8px;}
-summary::-webkit-details-marker{display:none;}
-summary::before{content:"+";color:var(--gold);font-size:1rem;line-height:1;}
-details[open] summary::before{content:"–";}
-.args{display:grid;gap:22px;padding-bottom:16px;}
-.args h4{margin:0 0 8px;font-family:'Jost',sans-serif;font-weight:500;font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;}
-.args h4.for{color:var(--verdant);} .args h4.against{color:var(--ember);}
-.args ul{margin:0;padding:0;list-style:none;display:grid;gap:11px;}
-.args li{font-size:.96rem;padding-left:14px;border-left:2px solid var(--line);color:var(--muted);font-family:'Cormorant Garamond',serif;}
-.args h4.for ~ ul li{border-color:var(--verdant-soft);}
-.args h4.against ~ ul li{border-color:var(--ember-soft);}
+/* facts / arguments — a single always-visible tab strip (neutral at rest, a
+   small color dot for For/Against) opening into one persistent boxed panel,
+   replacing the old buried <details> accordion. */
+.segstrip{display:flex;gap:6px;margin:26px 0 0;padding:5px;background:var(--panel);border:1px solid var(--line2);border-radius:999px;}
+.segbtn{flex:1;font-family:'Jost',sans-serif;font-weight:600;font-size:.74rem;letter-spacing:.03em;padding:11px 8px;border-radius:999px;border:none;background:none;color:var(--ink);cursor:pointer;text-align:center;transition:.15s;}
+.segbtn .n{display:block;font-weight:500;font-size:.64rem;color:var(--muted);margin-top:2px;}
+.segbtn .dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;vertical-align:middle;position:relative;top:-1px;}
+.segbtn .dot-for{background:var(--arg-for);}
+.segbtn .dot-against{background:var(--arg-against);}
+.segbtn.on{background:var(--gold-soft);color:var(--ink);font-weight:700;box-shadow:inset 0 0 0 1px rgba(134,99,19,.35);}
+.segbtn.on .n{color:var(--gold);opacity:.85;}
+
+.segpanel{margin-top:12px;padding:20px 20px;border-radius:16px;background:var(--panel);border:1px solid var(--line);min-height:40px;display:flex;align-items:center;justify-content:center;transition:.15s;}
+.segpanel.empty{color:var(--muted2);font-family:'Jost',sans-serif;font-size:.85rem;text-align:center;}
+.segpanel:not(.empty){display:block;text-align:left;}
+
+.flist{margin:0;padding:0;list-style:none;display:grid;gap:14px;}
+.flist li{position:relative;font-size:1rem;color:var(--muted);padding-left:18px;font-family:'Cormorant Garamond',serif;}
+.flist li::before{content:"";position:absolute;left:0;top:.55em;width:6px;height:6px;border-radius:50%;background:var(--gold);opacity:.85;}
+.flist li b{color:var(--ink);font-weight:600;}
+
+.argcol h4{margin:0 0 10px;font-family:'Jost',sans-serif;font-weight:500;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;}
+.argcol.for h4{color:var(--arg-for);} .argcol.against h4{color:var(--arg-against);}
+.argcol ul{margin:0;padding:0;list-style:none;display:grid;gap:11px;}
+.argcol li{font-size:.96rem;padding-left:14px;border-left:2px solid var(--arg-for-soft);color:var(--muted);font-family:'Cormorant Garamond',serif;}
+.argcol.against li{border-color:var(--arg-against-soft);}
 
 .nav{display:flex;gap:10px;margin-top:30px;align-items:center;}
 .btn{font-family:'Jost',sans-serif;letter-spacing:.06em;text-transform:uppercase;border:none;border-radius:999px;padding:14px 26px;font-size:.8rem;font-weight:500;cursor:pointer;background:var(--ink);color:var(--gold-ink);transition:filter .15s,transform .1s;}
@@ -329,6 +363,7 @@ details[open] summary::before{content:"–";}
   // ---------- state ----------
   var S = {gut:50, g1:50, g2:50, g3:50, g4:50, g5:50, g6:0, screen:0, shared:false, tried:null};
   var walled = {};
+  var TOUCHED = {}; // has this gate's control ever been interacted with this session — gates the drag-hint/glow
 
   // ---------- model ----------
   function model(s){
@@ -393,6 +428,49 @@ details[open] summary::before{content:"–";}
       return ["You're saying: <b>one level only.</b> Simulations don't build simulations.","You're saying: <b>a few levels deep.</b> It happens, then it stops.","You're saying: <b>infinite levels.</b> Every level builds the next."][v] + tip;
     }
     return "";
+  }
+  // Same facts as translate() above, reshaped into a short bold headline (ratio)
+  // plus a supporting caption (sub) for the boxed answer readout — kept as a
+  // separate function so translate()'s full-sentence form stays intact and unused
+  // rather than risk losing it.
+  function translateBox(g){
+    var v=S[g.k];
+    if(g.k==="g1"){
+      if(v===0) return {ratio:"NEVER", sub:"nothing built can ever be conscious — only reflect"};
+      if(v===100) return {ratio:"CERTAIN", sub:"build the pattern right, and someone's looking back"};
+      return {ratio:tenths(v), sub:"chance a truly conscious thing could ever be built"};
+    }
+    if(g.k==="g2"){
+      if(v===0) return {ratio:"IMPOSSIBLE", sub:"no universe could ever foot the bill"};
+      if(v===100) return {ratio:"CERTAIN", sub:"the physics easily allows it"};
+      return {ratio:tenths(v), sub:"chance the physics allows a machine powerful enough"};
+    }
+    if(g.k==="g3"){
+      if(v===0) return {ratio:"NONE", sub:"no civilization ever makes it"};
+      if(v===100) return {ratio:"NEARLY ALL", sub:"almost every civilization like ours makes it"};
+      return {ratio:"1 in "+RATE_N[v], sub:"civilizations like ours survive long enough to build one"};
+    }
+    if(g.k==="g4"){
+      if(v===0) return {ratio:"NONE WOULD", sub:"it's forbidden everywhere, forever"};
+      if(v===100) return {ratio:"EVERY ONE WOULD", sub:""};
+      return {ratio:(v/10)+" in 10", sub:"civilizations that could, would"};
+    }
+    if(g.k==="g5"){
+      var N=multVal(v);
+      if(N>=1) return {ratio:fmtInt(N)+"×", sub:"simulated mind"+(N>1?"s":"")+" made for every real person"};
+      return {ratio:"1 in "+fmtInt(1/N), sub:"real people, one simulated person gets made"};
+    }
+    if(g.k==="g6"){
+      var base=[
+        {ratio:"ONE LEVEL ONLY", sub:"simulations don't build simulations."},
+        {ratio:"A FEW LEVELS DEEP", sub:"it happens, then it stops."},
+        {ratio:"INFINITE LEVELS", sub:"every level builds the next."}
+      ][v];
+      var mm=model(S); var bb=mm.b; var bTxt = bb>=1 ? fmtInt(bb)+" simulators' worth" : (Math.round(bb*100)/100)+" of a simulator";
+      var tip = v===0 ? "" : " At your other settings, each simulated level would spawn <b>"+bTxt+"</b> — "+(bb>=1?"<b>past</b> the tipping point of 1, so the levels "+(v===2?"never end.":"grow fast for three levels."):"<b>below</b> the tipping point of 1, so it thins out.");
+      return {ratio:base.ratio, sub:base.sub+tip};
+    }
+    return {ratio:"", sub:""};
   }
   function valueLabel(g){
     var v=S[g.k];
@@ -1036,7 +1114,7 @@ details[open] summary::before{content:"–";}
           '<div class="ends"><span>Definitely real</span><span>Definitely a sim</span></div>'+
           '</div>'+
         '</div>'+
-        '<div class="nav"><button class="btn wide" id="start">Let\'s find out</button></div>'+
+        '<div class="nav"><button class="btn wide" id="start">Let\'s calculate my probability</button></div>'+
         '<p class="foot">Built on Nick Bostrom\'s simulation argument, with the math done honestly. Your answers stay on this device.</p>'+
       '</div>';
     setMandala("hookSigil", sigilGutFeel(S.gut));
@@ -1050,36 +1128,86 @@ details[open] summary::before{content:"–";}
     if(g.type==="choice"){
       return '<div class="choices">'+g.choices.map(function(c,i){ return '<button class="choice'+(S.g6===i?" on":"")+'" data-i="'+i+'"><b>'+c.t+'</b><small>'+c.d+'</small></button>'; }).join("")+'</div>';
     }
+    var showHint = !TOUCHED[g.k];
     return '<div class="dialval" id="val">'+valueLabel(g)+'</div>'+
       '<div class="dial-wrap">'+
+      (showHint ? '<div class="dial-glow" id="glow"></div>' : '')+
       '<input type="range" min="0" max="100" step="10" value="'+S[g.k]+'" id="rng" aria-label="'+g.name+'">'+
       '<div class="ends"><span>'+g.lo+'</span><span>'+g.hi+'</span></div>'+
       '</div>';
   }
 
+  // facts/for/against tab content, built live from the gate's own data —
+  // never hand-duplicated, so it can never drift from the real copy.
+  function segContent(g){
+    return {
+      facts: '<ul class="flist">'+g.facts.map(function(f){return "<li>"+f+"</li>";}).join("")+'</ul>',
+      "for": '<div class="argcol for"><ul>'+g.args.for.map(function(a){return "<li>"+a+"</li>";}).join("")+'</ul></div>',
+      against: '<div class="argcol against"><ul>'+g.args.against.map(function(a){return "<li>"+a+"</li>";}).join("")+'</ul></div>'
+    };
+  }
+  var SEG_EMPTY = "Tap a tab above to see what's behind your answer";
+
+  function refreshTranslate(g){
+    var tb = translateBox(g);
+    document.getElementById("ratio").textContent = tb.ratio;
+    document.getElementById("ratiosub").innerHTML = tb.sub;
+  }
+
   function renderGate(n){
     var g=G[n-1];
+    var tb = translateBox(g);
+    var showHint = g.type!=="choice" && !TOUCHED[g.k];
     root.innerHTML =
       '<div class="screen">'+
         '<p class="eyebrow"><span class="gn">'+n+'</span> / 6 · '+g.name+'</p>'+
         '<h2 class="q">'+g.q+'</h2>'+
         '<p class="sub">'+g.sub+'</p>'+
-        '<div class="sigil-box"><div class="sigil" id="mandalaHost"></div>'+controlHTML(g)+'</div>'+
-        '<div class="translate" id="tr"><p>'+translate(g)+'</p></div>'+
-        '<div class="facts"><p class="flabel">What we know</p><ul>'+g.facts.map(function(f){return "<li>"+f+"</li>";}).join("")+'</ul></div>'+
-        '<details><summary>See the arguments</summary><div class="args">'+
-          '<div><h4 class="for">Case for</h4><ul>'+g.args.for.map(function(a){return "<li>"+a+"</li>";}).join("")+'</ul></div>'+
-          '<div><h4 class="against">Case against</h4><ul>'+g.args.against.map(function(a){return "<li>"+a+"</li>";}).join("")+'</ul></div>'+
-        '</div></details>'+
+        '<div class="sigil-box">'+
+          (showHint ? '<p class="dragtip dragtip-top" id="dragtip"><span class="arrow l">‹</span> drag to answer <span class="arrow r">›</span></p>' : '')+
+          '<div class="sigil" id="mandalaHost"></div>'+controlHTML(g)+
+        '</div>'+
+        '<div class="translate" id="tr"><div class="ratio" id="ratio">'+tb.ratio+'</div><div class="ratio-sub" id="ratiosub">'+tb.sub+'</div></div>'+
+        '<div class="segstrip">'+
+          '<button class="segbtn" data-seg="facts">What we know<span class="n">'+g.facts.length+' facts</span></button>'+
+          '<button class="segbtn" data-seg="for"><span class="dot dot-for"></span>For<span class="n">'+g.args.for.length+' arguments</span></button>'+
+          '<button class="segbtn" data-seg="against"><span class="dot dot-against"></span>Against<span class="n">'+g.args.against.length+' arguments</span></button>'+
+        '</div>'+
+        '<div class="segpanel empty" id="segpanel">'+SEG_EMPTY+'</div>'+
         '<div class="nav"><button class="btn ghost" id="back">Back</button><div class="spacer"></div><button class="btn" id="next">'+(n===6?"Reveal my number":"Next")+'</button></div>'+
       '</div>';
     updateMandala(g);
     if(g.type==="choice"){
-      root.querySelectorAll(".choice").forEach(function(b){ b.addEventListener("click",function(){ S.g6=parseInt(b.getAttribute("data-i"),10); root.querySelectorAll(".choice").forEach(function(x){x.classList.remove("on");}); b.classList.add("on"); document.getElementById("tr").querySelector("p").innerHTML=translate(g); updateMandala(g); }); });
+      root.querySelectorAll(".choice").forEach(function(b){ b.addEventListener("click",function(){ S.g6=parseInt(b.getAttribute("data-i"),10); root.querySelectorAll(".choice").forEach(function(x){x.classList.remove("on");}); b.classList.add("on"); refreshTranslate(g); updateMandala(g); }); });
     } else {
       var rng=document.getElementById("rng");
-      rng.addEventListener("input",function(){ S[g.k]=parseInt(rng.value,10); document.getElementById("val").textContent=valueLabel(g); document.getElementById("tr").querySelector("p").innerHTML=translate(g); updateMandala(g); });
+      rng.addEventListener("input",function(){
+        S[g.k]=parseInt(rng.value,10);
+        TOUCHED[g.k]=true;
+        document.getElementById("val").textContent=valueLabel(g);
+        refreshTranslate(g);
+        updateMandala(g);
+        var tip=document.getElementById("dragtip"); if(tip) tip.classList.add("gone");
+        var glow=document.getElementById("glow"); if(glow) glow.classList.add("gone");
+      });
     }
+    var segC = segContent(g);
+    root.querySelectorAll(".segbtn").forEach(function(b){
+      b.addEventListener("click",function(){
+        var seg = b.getAttribute("data-seg");
+        var already = b.classList.contains("on");
+        root.querySelectorAll(".segbtn").forEach(function(x){x.classList.remove("on");});
+        var panel = document.getElementById("segpanel");
+        if(already){
+          panel.innerHTML = SEG_EMPTY;
+          panel.classList.add("empty");
+        } else {
+          b.classList.add("on");
+          panel.innerHTML = segC[seg];
+          panel.classList.remove("empty");
+        }
+      });
+    });
     document.getElementById("back").addEventListener("click",function(){ S.screen=n-1; render(); });
     document.getElementById("next").addEventListener("click",function(){
       if(n<=4 && S[g.k]===0 && !walled[g.k]){ showWall(g,n); return; }
