@@ -1,5 +1,5 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body>
-<title>Six Gates</title>
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body><!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Am I Simulated?</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 
@@ -200,7 +200,7 @@ details[open] summary::before{content:"–";}
 
 <canvas id="bgCanvas"></canvas>
 <div class="top">
-  <div class="brand">Six Gates<small>a simulation probability instrument</small></div>
+  <div class="brand">Am I Simulated?<small>Simulation Probability Calculator</small></div>
   <div class="progress" id="progress"></div>
 </div>
 <main id="screen"></main>
@@ -919,6 +919,37 @@ details[open] summary::before{content:"–";}
     inner += centerDot(cr, 0.85+0.15*Math.min(1,m.final*3));
     return inner;
   }
+
+  // Hook screen — the mandala before any gate has been answered, driven live
+  // by the gut-feeling dial: at 0 it's nearly bare (one dashed boundary,
+  // a faint seed); as the dial climbs toward 100 the six petals resolve one
+  // by one, outer accents and field flourishes appear, and the center
+  // brightens — the same flower-of-life geometry the result screen's
+  // composite reading uses, just walked from simple to fully expanded.
+  function sigilGutFeel(v){
+    var t = Math.max(0,Math.min(1,v/100));
+    var filled = t*6;
+    var inner = backdrop()+boundaryRing(.28+.52*t, t>0.97?null:"2 6");
+    PETALS.forEach(function(p,i){
+      var lt = Math.max(0,Math.min(1,filled-i));
+      if(lt>0) inner += '<circle cx="'+p[0]+'" cy="'+p[1]+'" r="30" fill="none" stroke="'+GOLD+'" stroke-width="'+(0.8+0.6*lt)+'" opacity="'+(0.25+0.55*lt)+'"/>';
+      else inner += '<circle cx="'+p[0]+'" cy="'+p[1]+'" r="30" fill="none" stroke="'+GOLD+'" stroke-width=".6" opacity=".16" stroke-dasharray="2 5"/>';
+    });
+    var clt = Math.max(0,Math.min(1,filled-6));
+    inner += clt>0
+      ? '<circle cx="100" cy="100" r="30" fill="none" stroke="'+GOLD+'" stroke-width="'+(0.8+0.6*clt)+'" opacity="'+(0.25+0.55*clt)+'"/>'
+      : '<circle cx="100" cy="100" r="30" fill="none" stroke="'+GOLD+'" stroke-width=".6" opacity=".16" stroke-dasharray="2 5"/>';
+    var outerPos=[[100,26],[174,66],[174,134],[100,174],[26,134],[26,66]];
+    var n=t*6;
+    outerPos.forEach(function(p,i){ var op=Math.max(0,Math.min(1,n-i)); if(op>0) inner+=miniFlower(p[0],p[1],.22,op*.5,2.4); });
+    var field=[{p:[18,15],s:.16},{p:[182,20],s:.14},{p:[20,182],s:.15},{p:[182,168],s:.16},{p:[90,8],s:.13},{p:[100,192],s:.14}];
+    var fcount=Math.round(t*t*field.length);
+    for(var i=0;i<fcount;i++){ inner+=miniFlower(field[i].p[0],field[i].p[1],field[i].s,.42,2.6); }
+    inner += centerDot(3+10*Math.sqrt(t), .5+.4*t);
+    return '<g><animateTransform attributeName="transform" type="rotate" from="0 100 100" to="360 100 100" dur="70s" repeatCount="indefinite"/>'+
+      '<g opacity=".92"><animate attributeName="opacity" values=".7;1;.7" dur="5s" repeatCount="indefinite"/>'+inner+'</g></g>';
+  }
+
   function updateMandala(g){
     var inner;
     if(g.k==="g1") inner=sigilConscious(S.g1);
@@ -993,13 +1024,13 @@ details[open] summary::before{content:"–";}
   function renderHook(){
     root.innerHTML =
       '<div class="screen">'+
-        '<p class="eyebrow">Six questions · three minutes · no philosophy degree required</p>'+
+        '<p class="eyebrow">Six inputs · three minutes · one probability</p>'+
         '<h1 class="big">Are you living in a simulation?</h1>'+
-        '<p class="pitch">Everyone has an opinion. Almost nobody knows what they\'d actually have to believe for it to be true. Six dials. Your beliefs. One number — and the one belief that\'s secretly doing all the work.</p>'+
+        '<p class="pitch">First, a gut check. Then six beliefs — about consciousness, physics, survival, and more. We run the real math and hand back one number: your probability, given exactly what you believe.</p>'+
         '<div class="hook-sigil" id="hookSigil"></div>'+
         '<div class="gutbox">'+
-          '<p class="eyebrow" style="justify-content:center;margin-bottom:10px">Before we start — gut feeling</p>'+
-          '<div class="gut-num" id="gutNum">'+S.gut+'%<small>chance you\'re simulated</small></div>'+
+          '<p class="eyebrow" style="justify-content:center;margin-bottom:10px">Gut check: are you living in a simulation?</p>'+
+          '<div class="gut-num" id="gutNum">'+S.gut+'%</div>'+
           '<div class="dial-wrap">'+
           '<input type="range" min="0" max="100" step="5" value="'+S.gut+'" id="gut" aria-label="Gut feeling: chance you are simulated">'+
           '<div class="ends"><span>Definitely real</span><span>Definitely a sim</span></div>'+
@@ -1008,9 +1039,9 @@ details[open] summary::before{content:"–";}
         '<div class="nav"><button class="btn wide" id="start">Let\'s find out</button></div>'+
         '<p class="foot">Built on Nick Bostrom\'s simulation argument, with the math done honestly. Your answers stay on this device.</p>'+
       '</div>';
-    setMandala("hookSigil", sigilConscious(50));
+    setMandala("hookSigil", sigilGutFeel(S.gut));
     var gut=document.getElementById("gut");
-    function syncGut(){ document.getElementById("gutNum").innerHTML=S.gut+'%<small>chance you\'re simulated</small>'; }
+    function syncGut(){ document.getElementById("gutNum").innerHTML=S.gut+'%'; setMandala("hookSigil", sigilGutFeel(S.gut)); }
     gut.addEventListener("input",function(){ S.gut=parseInt(gut.value,10); syncGut(); });
     document.getElementById("start").addEventListener("click",function(){ S.screen=1; render(); });
   }
@@ -1149,7 +1180,7 @@ details[open] summary::before{content:"–";}
       '<div class="screen"><div id="rtop">'+resultTopHTML()+'</div>'+
         '<div class="sec"><span class="tag">Tinker</span><p style="margin:0 0 6px;color:var(--muted);font-size:.92rem;font-family:\'Cormorant Garamond\',serif">Change any answer. Everything above updates.</p><div class="tinker" id="tinker">'+tinkerHTML()+'</div></div>'+
         '<div class="nav"><button class="btn ghost" id="retake">Start over</button></div>'+
-        '<p class="foot">Six Gates · an interactive reading of Bostrom\'s simulation argument, not a measurement. Sources: Bostrom (2003), Putnam, Dennett, Searle, Penrose, Tononi, Chalmers <i>Reality+</i>, Benatar, Ord.</p>'+
+        '<p class="foot">Am I Simulated? · a six-gate reading of Bostrom\'s simulation argument, not a measurement. Sources: Bostrom (2003), Putnam, Dennett, Searle, Penrose, Tononi, Chalmers <i>Reality+</i>, Benatar, Ord.</p>'+
       '</div>';
     var wrows=root.querySelectorAll(".wf-row");
     wrows.forEach(function(r,i){ setTimeout(function(){ r.classList.add("in"); var bar=r.querySelector(".bar i"); if(bar) setTimeout(function(){ bar.style.width=Math.max(0.5,parseFloat(bar.getAttribute("data-w")))+"%"; },80); }, 250+i*380); });
@@ -1216,4 +1247,4 @@ details[open] summary::before{content:"–";}
 </script>
 
 
-</body></html>
+</body></html></body></html>
