@@ -1,0 +1,1219 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body>
+<title>Six Gates</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+:root{
+  color-scheme:light;
+  --bg:#F8F1F8; --bg2:#ECDAEC; --bg3:#E4D3E6;
+  --ink:#39193E; --muted:#73487A; --muted2:#8A6690;
+  --line:rgba(113,39,145,.16); --line2:rgba(113,39,145,.3);
+  --gold:#866313; --gold-dim:#C7A868; --gold-ink:#FBF3EA; --gold-soft:rgba(134,99,19,.14);
+  --violet:#712791; --indigo:#3D2E9E;
+  --peach:#F6E3F4; --pink:#EFC2E2;
+  --verdant:#3F7A54; --verdant-soft:rgba(63,122,84,.14);
+  --ember:#B33A2E; --ember-soft:rgba(179,58,46,.14);
+  --shadow:rgba(57,25,62,.16);
+}
+
+*{box-sizing:border-box;}
+html{background:var(--bg);}
+body{margin:0;
+  background:
+    radial-gradient(1px 1px at 15% 12%, rgba(134,99,19,.5), transparent),
+    radial-gradient(1px 1px at 82% 8%, rgba(113,39,145,.4), transparent),
+    radial-gradient(1.5px 1.5px at 35% 42%, rgba(134,99,19,.4), transparent),
+    radial-gradient(1px 1px at 90% 38%, rgba(113,39,145,.35), transparent),
+    radial-gradient(1px 1px at 8% 65%, rgba(208,57,133,.35), transparent),
+    radial-gradient(1px 1px at 60% 85%, rgba(113,39,145,.35), transparent),
+    radial-gradient(1.5px 1.5px at 6% 92%, rgba(134,99,19,.4), transparent),
+    radial-gradient(ellipse 900px 650px at 25% 100%, rgba(208,57,133,.1), transparent 60%),
+    radial-gradient(ellipse 750px 550px at 92% 4%, rgba(61,46,158,.09), transparent 60%),
+    var(--bg);
+  color:var(--ink);font-family:'Cormorant Garamond',Georgia,serif;line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:hidden;}
+h1,h2,h3,.display{font-family:'Fraunces',Georgia,serif;font-weight:600;letter-spacing:-0.01em;text-wrap:balance;}
+.mono{font-family:'Jost',sans-serif;font-variant-numeric:tabular-nums;}
+button{font-family:inherit;}
+button:focus-visible,input:focus-visible,.choice:focus-visible{outline:2px solid var(--gold);outline-offset:3px;}
+::selection{background:var(--gold-soft);}
+a{color:var(--gold);}
+
+#bgCanvas{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:.7;}
+
+/* shell */
+.top{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;padding:18px 20px 10px;max-width:600px;margin:0 auto;}
+.brand{font-family:'Fraunces',serif;font-weight:600;font-style:italic;font-size:1.15rem;letter-spacing:.01em;color:var(--ink);}
+.brand small{display:block;font-family:'Jost',sans-serif;font-style:normal;font-weight:500;font-size:.58rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted2);margin-top:2px;}
+.progress{display:flex;align-items:center;gap:5px;}
+.ptick{width:7px;height:7px;border-radius:50%;background:var(--line2);transition:background .3s,box-shadow .3s;}
+.ptick.done{background:var(--gold-dim);}
+.ptick.cur{background:var(--gold);box-shadow:0 0 0 4px var(--gold-soft);}
+main{position:relative;z-index:2;max-width:600px;margin:0 auto;padding:6px 20px 90px;}
+.screen{animation:fade .4s ease;}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+.eyebrow{font-family:'Jost',sans-serif;font-weight:500;font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted2);margin:0 0 16px;display:flex;align-items:center;gap:8px;}
+.eyebrow .gn{color:var(--gold);}
+h1.big{font-size:clamp(2.1rem,7.5vw,3.1rem);line-height:1.06;margin:8px 0 16px;font-style:italic;color:var(--ink);}
+h2.q{font-size:clamp(1.5rem,5.6vw,2.15rem);line-height:1.16;margin:0 0 14px;font-style:italic;color:var(--ink);}
+h2.q em{color:var(--gold);font-style:italic;}
+.sub{color:var(--muted);font-size:1.05rem;margin:0 0 8px;max-width:48ch;font-family:'Cormorant Garamond',serif;}
+.pitch{font-size:1.1rem;max-width:52ch;color:var(--ink);opacity:.92;font-family:'Cormorant Garamond',serif;}
+
+/* the sigil box — mandala + dial */
+.sigil-box{background:linear-gradient(155deg, rgba(113,39,145,.06), rgba(208,57,133,.04) 55%, rgba(253,250,252,.6) 100%);border:1px solid var(--line);border-radius:22px;padding:28px 20px 22px;margin:26px 0 20px;text-align:center;}
+.sigil{width:100%;max-width:230px;margin:0 auto 6px;}
+.sigil svg{width:100%;height:auto;display:block;}
+.dialval{font-family:'Fraunces',serif;font-style:italic;font-weight:600;font-size:1.9rem;color:var(--gold);margin-top:6px;}
+.dial-wrap{max-width:360px;margin:10px auto 0;}
+input[type=range]{width:100%;height:24px;background:transparent;-webkit-appearance:none;appearance:none;outline:none;margin:0;cursor:pointer;}
+input[type=range]::-webkit-slider-runnable-track{height:3px;background:linear-gradient(to right,var(--gold-dim),var(--line2));border-radius:3px;}
+input[type=range]::-moz-range-track{height:3px;background:var(--line2);border-radius:3px;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;margin-top:-9px;width:22px;height:22px;border-radius:50%;background:var(--bg2);border:3px solid var(--gold);box-shadow:0 0 12px rgba(134,99,19,.3);cursor:grab;}
+input[type=range]::-moz-range-thumb{width:22px;height:22px;border:3px solid var(--gold);border-radius:50%;background:var(--bg2);box-shadow:0 0 12px rgba(134,99,19,.3);cursor:grab;}
+.ends{display:flex;justify-content:space-between;gap:12px;font-size:.85rem;color:var(--muted);font-family:'Cormorant Garamond',serif;font-style:italic;margin-top:4px;}
+.ends span{max-width:48%;}
+.ends span:last-child{text-align:right;}
+.translate{margin:0 0 28px;padding:18px 22px;border-radius:16px;background:linear-gradient(135deg, var(--peach), var(--pink));}
+.translate p{margin:0;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1.08rem;color:#3D1743;}
+.translate b{font-weight:700;color:#5C1655;font-style:normal;}
+
+.choices{display:flex;flex-direction:column;gap:10px;max-width:400px;margin:16px auto 0;}
+.choice{text-align:left;border:1px solid var(--line);background:rgba(113,39,145,.035);border-radius:14px;padding:14px 18px;cursor:pointer;color:var(--ink);font-size:1rem;font-family:'Cormorant Garamond',serif;transition:border-color .15s,background .15s;}
+.choice b{font-weight:600;}
+.choice small{display:block;color:var(--muted);font-size:.88rem;margin-top:3px;font-style:italic;}
+.choice.on{border-color:var(--gold);background:linear-gradient(135deg, rgba(113,39,145,.08), rgba(208,57,133,.06));}
+.choice.on b{color:var(--gold);}
+
+.facts{margin-top:28px;}
+.facts .flabel,.args-label{font-family:'Jost',sans-serif;font-weight:500;font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted2);margin:0 0 14px;}
+.facts ul{margin:0;padding:0;list-style:none;display:grid;gap:14px;}
+.facts li{position:relative;font-size:1rem;color:var(--muted);padding-left:18px;font-family:'Cormorant Garamond',serif;}
+.facts li::before{content:"";position:absolute;left:0;top:.55em;width:6px;height:6px;border-radius:50%;background:var(--gold);opacity:.85;}
+.facts li b{color:var(--ink);font-weight:600;}
+.fact{margin-top:18px;font-size:1rem;color:var(--muted);padding-left:14px;border-left:2px solid var(--line);font-family:'Cormorant Garamond',serif;}
+.fact b{color:var(--ink);font-weight:600;}
+
+details{margin-top:22px;border-top:1px solid var(--line);}
+summary{cursor:pointer;padding:15px 0;font-family:'Jost',sans-serif;font-weight:500;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted2);list-style:none;display:flex;align-items:center;gap:8px;}
+summary::-webkit-details-marker{display:none;}
+summary::before{content:"+";color:var(--gold);font-size:1rem;line-height:1;}
+details[open] summary::before{content:"–";}
+.args{display:grid;gap:22px;padding-bottom:16px;}
+.args h4{margin:0 0 8px;font-family:'Jost',sans-serif;font-weight:500;font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;}
+.args h4.for{color:var(--verdant);} .args h4.against{color:var(--ember);}
+.args ul{margin:0;padding:0;list-style:none;display:grid;gap:11px;}
+.args li{font-size:.96rem;padding-left:14px;border-left:2px solid var(--line);color:var(--muted);font-family:'Cormorant Garamond',serif;}
+.args h4.for ~ ul li{border-color:var(--verdant-soft);}
+.args h4.against ~ ul li{border-color:var(--ember-soft);}
+
+.nav{display:flex;gap:10px;margin-top:30px;align-items:center;}
+.btn{font-family:'Jost',sans-serif;letter-spacing:.06em;text-transform:uppercase;border:none;border-radius:999px;padding:14px 26px;font-size:.8rem;font-weight:500;cursor:pointer;background:var(--ink);color:var(--gold-ink);transition:filter .15s,transform .1s;}
+.btn:hover{filter:brightness(1.05);} .btn:active{transform:scale(.98);}
+.btn.ghost{background:none;color:var(--muted);border:1px solid var(--line2);}
+.btn.small{padding:9px 16px;font-size:.72rem;}
+.btn.wide{width:100%;padding:16px;font-size:.85rem;}
+.spacer{flex:1;}
+
+/* hook */
+.hook-sigil{width:190px;max-width:55%;margin:22px auto 4px;}
+.hook-sigil svg{width:100%;height:auto;opacity:.92;}
+.gutbox{margin-top:8px;text-align:center;}
+.gut-num{font-family:'Fraunces',serif;font-style:italic;font-weight:600;font-size:2.2rem;color:var(--gold);}
+.gut-num small{display:block;font-size:.82rem;color:var(--muted);font-family:'Cormorant Garamond',serif;font-weight:400;font-style:italic;margin-top:2px;}
+
+/* wall overlay */
+.overlay{position:fixed;inset:0;background:rgba(20,12,22,.84);display:flex;align-items:center;justify-content:center;padding:20px;z-index:100;}
+.wall{background:linear-gradient(155deg, rgba(179,58,46,.08), rgba(208,57,133,.05) 55%, var(--bg2) 100%);border:1px solid rgba(179,58,46,.4);border-radius:18px;padding:30px 26px;max-width:440px;width:100%;}
+.wall h3{margin:0 0 10px;font-size:1.5rem;color:var(--ember);font-style:italic;font-family:'Fraunces',serif;}
+.wall p{margin:0 0 22px;color:var(--muted);font-family:'Cormorant Garamond',serif;font-size:1.05rem;}
+
+/* result */
+.result-mandala-wrap{position:relative;width:220px;height:220px;margin:16px auto 8px;}
+.result-mandala-wrap > svg:first-child{position:absolute;inset:0;}
+.result-mandala-inner{position:absolute;inset:20px;}
+.result-mandala-inner svg{width:100%;height:100%;display:block;}
+.result-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-style:italic;font-weight:600;font-size:clamp(1.7rem,6.5vw,2.3rem);color:var(--gold);pointer-events:none;}
+.result-lead{font-size:1.02rem;color:var(--muted);margin:12px 0 0;text-align:center;font-family:'Cormorant Garamond',serif;font-style:italic;}
+.gutcmp{margin-top:16px;font-size:1rem;text-align:center;color:var(--muted);font-family:'Cormorant Garamond',serif;}
+.gutcmp b{color:var(--ink);}
+.gutcmp .mono{color:var(--gold);font-weight:600;}
+
+.sec{margin-top:38px;}
+.sec .tag{font-family:'Jost',sans-serif;font-weight:500;font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted2);display:block;margin-bottom:14px;}
+.arch{font-size:1.55rem;line-height:1.25;margin:0;font-style:italic;font-family:'Fraunces',serif;color:var(--ink);}
+.arch small{display:block;font-size:.95rem;color:var(--muted);font-family:'Cormorant Garamond',serif;font-weight:400;font-style:normal;margin-top:10px;}
+
+.spine{position:relative;padding-left:22px;}
+.spine::before{content:"";position:absolute;left:5px;top:6px;bottom:6px;width:1px;background:var(--line2);}
+.wf{display:grid;gap:24px;}
+.wf-row{position:relative;opacity:0;transform:translateY(6px);transition:opacity .4s,transform .4s;}
+.wf-row.in{opacity:1;transform:none;}
+.wf-row::before{content:"";position:absolute;left:-22px;top:5px;width:9px;height:9px;border-radius:50%;background:var(--bg);border:2px solid var(--gold-dim);}
+.wf-row.in::before{border-color:var(--gold);}
+.wf-row .t{font-size:.98rem;color:var(--muted);font-family:'Cormorant Garamond',serif;}
+.wf-row .t b{color:var(--ink);}
+.wf-row .n{font-family:'Jost',sans-serif;font-weight:600;color:var(--gold);display:block;margin-top:6px;font-size:1.05rem;}
+.wf-row .bar{margin-top:9px;height:3px;border-radius:2px;background:var(--line);overflow:hidden;}
+.wf-row .bar i{display:block;height:100%;background:var(--gold);width:0;transition:width .8s ease;}
+.wf-row.final{background:var(--bg2);padding:16px 18px;border-radius:12px;margin-left:-18px;}
+.wf-row.final::before{left:-4px;}
+.wf-row.final .n{font-size:1.35rem;}
+
+.try{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:16px;}
+.chip{font-family:'Jost',sans-serif;font-size:.72rem;padding:6px 12px;border-radius:999px;background:var(--gold-soft);color:var(--gold);}
+
+.scale{position:relative;height:100px;margin:32px 0 4px;}
+.scale .axis{position:absolute;left:0;right:0;top:50px;height:1px;background:var(--line2);}
+.scale .tick{position:absolute;top:46px;width:9px;height:9px;border-radius:50%;background:var(--muted2);transform:translateX(-50%);cursor:default;}
+.scale .tick.you{background:var(--gold);width:15px;height:15px;top:43px;box-shadow:0 0 0 4px var(--bg),0 0 10px rgba(134,99,19,.4);z-index:2;}
+.scale .lbl{position:absolute;transform:translateX(-50%);font-size:.7rem;color:var(--muted2);white-space:nowrap;font-family:'Jost',sans-serif;}
+.scale .lbl.up{top:16px;} .scale .lbl.dn{top:68px;}
+.scale .lbl.you{color:var(--gold);font-weight:600;top:-4px;}
+.scale .lft{transform:translateX(-6px);} .scale .rgt{transform:translateX(calc(-100% + 6px));}
+.scale .tick:hover + .tip,.scale .tick:focus + .tip{opacity:1;}
+.scale .tip{position:absolute;top:-32px;transform:translateX(-50%);background:var(--ink);color:var(--bg);font-size:.72rem;padding:5px 10px;border-radius:6px;opacity:0;pointer-events:none;white-space:nowrap;transition:opacity .15s;z-index:3;font-family:'Jost',sans-serif;}
+.famous-note{font-size:.8rem;color:var(--muted2);margin-top:16px;font-family:'Cormorant Garamond',serif;font-style:italic;}
+
+.share{background:var(--bg2);border-radius:14px;padding:20px;font-family:'IBM Plex Mono',monospace;font-size:.82rem;white-space:pre-wrap;line-height:1.6;border:1px dashed var(--line2);color:var(--muted);}
+.copyrow{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;}
+.btn.copied{background:var(--verdant);color:#0f231a;}
+
+.tinker{display:grid;gap:18px;}
+.trow{display:grid;grid-template-columns:56px 1fr;gap:12px;align-items:start;padding-top:16px;border-top:1px solid var(--line);}
+.trow .gk{font-family:'Jost',sans-serif;font-weight:500;font-size:.66rem;color:var(--muted2);padding-top:3px;letter-spacing:.06em;}
+.trow label{font-size:.95rem;font-weight:600;display:block;color:var(--ink);font-family:'Cormorant Garamond',serif;}
+.trow .tv{font-size:.82rem;color:var(--muted);font-weight:400;font-family:'Jost',sans-serif;}
+.trow input[type=range]{margin:8px 0 0;height:20px;}
+.trow .mini{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px;}
+.trow .mini button{font-family:'Jost',sans-serif;font-size:.72rem;padding:7px 12px;border-radius:999px;border:1px solid var(--line2);background:var(--bg2);cursor:pointer;color:var(--muted);}
+.trow .mini button.on{border-color:var(--gold);background:var(--gold-soft);color:var(--gold);}
+
+.shared-banner{background:linear-gradient(135deg, var(--peach), var(--pink));border-radius:14px;padding:14px 16px;font-size:.95rem;margin-bottom:20px;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;color:#3D1743;font-family:'Cormorant Garamond',serif;}
+.foot{font-family:'Jost',sans-serif;font-size:.7rem;color:var(--muted2);margin-top:36px;line-height:1.8;letter-spacing:.02em;}
+.foot a{color:var(--muted);text-decoration:underline;}
+
+@media (prefers-reduced-motion: reduce){
+  *{transition-duration:0.01ms !important;animation-duration:0.01ms !important;}
+}
+</style>
+
+<canvas id="bgCanvas"></canvas>
+<div class="top">
+  <div class="brand">Six Gates<small>a simulation probability instrument</small></div>
+  <div class="progress" id="progress"></div>
+</div>
+<main id="screen"></main>
+<div id="overlayRoot"></div>
+
+<script>
+(function(){
+  var REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // ---------- gate data ----------
+  var G = [
+    {k:"g1", em:"🧠", name:"Conscious", type:"pct",
+     q:"Can we build something that's truly <em>conscious</em>?",
+     sub:"Conscious: it feels, it has an inside — someone's in there, not just processing. And “build” can mean anything: growing a brain from scratch, copying one wire-for-wire, or writing it in code.",
+     lo:"No. Just a very good mirror.", hi:"Yes. Someone's looking back.",
+     facts:[
+       "No law of physics rules it out — the question is whether it would <i>work</i>, not whether it's allowed.",
+       "We're already partway there on copying: full wiring diagrams of simple brains (like the fruit fly) have been mapped and simulated.",
+       "There's no scientific test that can detect consciousness in anything — we can't even fully confirm it in insects, let alone a machine."],
+     wall:"In your world, no computation can ever be a someone. Every “mind” ever built, however sophisticated, is just a mirror reflecting inputs back out. There's no one looking back — and there never will be.",
+     args:{for:[
+       "<b>Functionalism</b> (Putnam, Dennett): consciousness is the pattern, not the material — hand the same pattern to any substrate and it should work, like a dance handed to any dancer.",
+       "<b>Evolution already did it with “dumb” matter</b>: mindless, unplanned physical processes stumbled into consciousness once. Deliberately engineering the same organization shouldn't be categorically harder.",
+       "<b>Ship of Theseus, for your brain</b>: swap your neurons one at a time for identical artificial ones — most philosophers think you'd stay conscious throughout. The material changed completely; you didn't."],
+      against:[
+       "<b>Searle's Chinese Room</b>: computation is symbol-shuffling by rule — meaning-blind by definition. His own analogy: simulating digestion never gets anything digested.",
+       "<b>Penrose–Hameroff</b>: the brain may run physics no algorithm can — possibly uncomputable quantum processes, argued via Gödel. Not the wrong code; the wrong physics entirely.",
+       "<b>Integrated Information Theory</b> (Tononi): digital chips are built to be decomposable into separable logic gates. Consciousness may require the opposite — no software fixes the wrong architecture."]}},
+    {k:"g2", em:"⚛️", name:"Physics", type:"pct",
+     q:"Could a civilization ever build a computer powerful enough to simulate a mind — and a whole world around it?",
+     sub:"Not “could we write clever software.” Could the actual laws of physics — how much computation fits in matter and energy — ever support a machine this capable?",
+     lo:"No. No universe could foot the bill.", hi:"Yes. Just render what's being watched.",
+     facts:[
+       "Physics allows staggering computational density (the Bekenstein bound, Bremermann's limit) — dozens of orders of magnitude above anything built so far, no known wall yet.",
+       "A simulation doesn't need to compute everything at once — full detail only where something's observed, the same trick game engines already use.",
+       "The universe may cap total information in any region (the holographic principle, from black hole thermodynamics) — a possible hard ceiling on how much anything can ever store."],
+     wall:"In your world, no computation — however advanced — could ever be dense enough to run a mind at scale. Reality's fine details simply aren't affordable. Nobody, anywhere, could build this.",
+     args:{for:[
+       "<b>The headroom is enormous</b>: ordinary, non-exotic physics alone vastly exceeds what's needed to run every mind that's ever existed.",
+       "<b>Render on demand</b>: computing only what's observed could cut real costs by many orders of magnitude versus full-universe simulation.",
+       "<b>We're already on this curve</b>: compute per unit of energy has grown for decades with no wall in sight — extrapolate centuries of ordinary progress, no miracles required."],
+      against:[
+       "<b>A hard information ceiling</b>: the holographic principle implies a finite cap on any bounded region — push fidelity far enough and nothing gets past it.",
+       "<b>The shortcut might not survive scrutiny</b>: many simultaneous, cross-checking observers could force near-full-fidelity computation everywhere, quietly erasing the savings.",
+       "<b>The compute might need the wrong kind of physics</b>: if minds require the exotic quantum processes raised in the Conscious gate, no classical processing power — however vast — is the right <i>kind</i> of computation."]}},
+    {k:"g3", em:"🛸", name:"Survival", type:"rate",
+     q:"Of every civilization that reaches our level of technology, how many survive long enough to build one of these simulators?",
+     sub:"Not humans specifically — any civilization, anywhere, that gets as far as we are today. Is this stage of development a death trap, or just a speed bump?",
+     lo:"None survive. Ever.", hi:"Nearly all make it through.",
+     facts:[
+       "We have exactly one data point, and it hasn't finished the test — we can't confirm survival is even possible, only that it hasn't been ruled out.",
+       "The universe looks empty, and that silence is evidence: no signals, no megastructures, anywhere, despite billions of years' head start available to others.",
+       "We're inside the danger window right now, for the first time in history — nuclear weapons, engineered pathogens, and fast-advancing AI are all live at once, in our lifetime."],
+     wall:"In your world, every civilization that reaches our level destroys itself before going further. The Great Filter is absolute, dead ahead of every civilization, ours included. No one ever builds the machine.",
+     args:{for:[
+       "<b>Capability tends to bring control</b>: global nuclear stockpiles fell from ~70,000 warheads at the Cold War peak to ~12,000 today, via treaties and monitoring built to match the risk.",
+       "<b>We keep almost dying, and not dying</b>: the Cuban Missile Crisis, Petrov's 1983 false-alarm call — real near-misses that didn't convert into extinction.",
+       "<b>You only need to spread out once</b>: settling even one other world turns single-point extinction risks into merely local disasters."],
+      against:[
+       "<b>The Fermi Paradox</b>: the silence is the loudest evidence we have — but genuinely ambiguous. Could mean a severe filter, or civilizations hiding, or expansion we simply can't detect.",
+       "<b>Stacked, unprecedented risks</b>: nuclear weapons, engineered pandemics, and self-improving AI, all at once, with no successful precedent for any. Some researchers put total extinction risk this century at roughly 1-in-6.",
+       "<b>The Vulnerable World Hypothesis</b> (Bostrom): as destructive tech gets cheaper and reaches smaller groups, defense needs total, permanent compliance — offense only needs one actor, once."]}},
+    {k:"g4", em:"🤖", name:"Choice", type:"pct",
+     q:"Of the civilizations that could build these simulations, how many actually choose to run them?",
+     sub:"Not whether it's possible — that's Physics. Whether they'd <i>want</i> to. A mature civilization only needs some fraction, out of potentially billions, to want this.",
+     lo:"Never. It's forbidden everywhere.", hi:"Always. Nobody holds back.",
+     facts:[
+       "We already do this at small scale — historical simulations, “what-if” models, increasingly detailed virtual worlds already exist well below posthuman capability.",
+       "You only need a tiny fraction to want it — a vanishingly small percentage of a vast future population is still a huge absolute number.",
+       "Zero direct evidence either way: pure extrapolation from current human motives, since no civilization has ever reached this stage, as far as we know."],
+     wall:"In your world, every civilization capable of this decides never to do it — universally, permanently. The technology exists forever, and nobody ever presses run.",
+     args:{for:[
+       "<b>Curiosity already scales with capability</b>: every leap in computing power has been followed by more simulating, not less.",
+       "<b>Real research value</b>: studying their own history, stress-testing survival — the exact question the Survival gate is asking here — or training AI in realistic environments.",
+       "<b>The anti-natalist objection has a weak point</b>: Benatar's asymmetry argument treats non-existence as costless, but almost every conscious being, given the choice and even through real hardship, chooses to keep living — undercutting “creating life is inherently cruel” as a hard stop."],
+      against:[
+       "<b>Anti-natalism</b> (Benatar): a sufficiently reflective civilization might decide creating suffering minds without consent is wrong, full stop.",
+       "<b>Interest in “primitive” ancestors may fade, not grow</b>: humans today don't recreate ant colonies in loving detail despite having the means — posthumans might view pre-posthuman life the same way.",
+       "<b>Compute has an opportunity cost, even at galactic scale</b>: competing against expansion, research, self-improvement. Ancestor simulation could stay a niche hobby."]}},
+    {k:"g5", em:"🌀", name:"Intensity", type:"mult",
+     q:"If they do run simulations, how many simulated minds do they create — compared to their own population?",
+     sub:"Not a headcount — a multiplier. 10 billion real people and 10 billion simulated total = 1×. Go far beyond that, and simulated minds start to vastly outnumber real ones.",
+     lo:"Barely bothers. A handful, if that.", hi:"Mass-produced. Like video games.",
+     facts:[
+       "Copying is nearly free once the thing exists — running another instance costs a fraction of building the first, the way software, video, and games already work.",
+       "We already vastly outnumber ourselves with simulated agents, just not conscious ones — billions of NPCs exist across today's games, far more numerous than humans, each far shallower than a real mind.",
+       "Simulated and real populations aren't tied to the same constraints: real population is capped by land, food, and biology; simulated population is capped only by the compute they choose to build."],
+     wall:"",
+     args:{for:[
+       "<b>The marginal cost collapses</b> once the tech exists, the way digital media did — expensive-to-copy became nearly free, and proliferated by orders of magnitude.",
+       "<b>The strongest use cases need scale, not a single copy</b>: alternate-history research, AI training, survival statistics — all need many parallel runs, not one.",
+       "<b>Demand scales with population</b>: if simulated-world living becomes as normal as gaming or VR is today, market demand alone could push simulated minds far past real ones."],
+      against:[
+       "<b>Genuine consciousness might not get cheap the way shallow content did</b>: a truly conscious mind in a convincing world could stay expensive even as raw compute gets cheaper.",
+       "<b>The ethics gets harder at scale, not easier</b> (the same anti-natalism tension from the Choice gate): mass-producing billions of suffering-capable minds is a very different proposition than simulating one ancestor carefully.",
+       "<b>Running many at once hits the Physics ceiling sooner</b>: real resource limits bite harder when multiplying many full, rich worlds in parallel, not just one."]}},
+    {k:"g6", em:"🪆", name:"Nesting", type:"choice",
+     q:"If a simulated civilization gets advanced enough, could it go on to run simulations of its own — nested inside the first, like Russian nesting dolls?",
+     sub:"Not about how deep it goes — about whether it happens at all. Even occasional nesting can multiply the number of simulated minds far past a single layer.",
+     choices:[
+       {t:"One level only.", d:"Simulated civilizations don't get the chance, or don't take it."},
+       {t:"A few levels deep.", d:"It happens sometimes, but dies out quickly."},
+       {t:"Infinite levels.", d:"Once it starts, it doesn't stop."}],
+     facts:[
+       "Nested computation already happens today — running a virtual machine inside another is routine cloud-computing practice. Only the scale (a civilization, not a server) would be new.",
+       "A simulated civilization inherits everything that got its “parent” this far — the same capability, curiosity, and trajectory that already produced the choice to simulate once.",
+       "Small cascades compound fast, by simple math: a branching process only needs to slightly exceed break-even, repeated, to become enormous — like a penny doubled daily for a month."],
+     wall:"",
+     args:{for:[
+       "<b>A copy of a civilization that chose to simulate probably makes the same choice again</b> — it was built from the same values, motives, and technology.",
+       "<b>It only has to cross break-even once</b>: cross it narrowly and the math takes over, regardless of how modest each layer's ambition is.",
+       "<b>We're already comfortable running things inside things</b>: modern computing stacks virtualization on virtualization without meaningful breakdown."],
+      against:[
+       "<b>Each layer likely has less to work with than the one above</b>: a simulated civilization runs on a slice of its creator's resources, not resources of its own — budgets could shrink, not stay constant, down the stack.",
+       "<b>Whoever runs the layer above can simply say no</b>: nesting needs permission, not just capability and motive.",
+       "<b>Fidelity can degrade with every generation, like a copy of a copy</b>: shortcuts compounding at each layer could cause instability well before “infinite levels.”"]}}
+  ];
+
+  var RATE_LABEL = {100:"Nearly all survive",90:"About 1 in 10",80:"About 1 in 100",70:"About 1 in 1,000",60:"About 1 in 10,000",50:"About 1 in 100,000",40:"About 1 in a million",30:"About 1 in 10 million",20:"About 1 in 100 million",10:"About 1 in a billion",0:"None. Ever."};
+  var RATE_N = {90:"10",80:"100",70:"1,000",60:"10,000",50:"100,000",40:"a million",30:"10 million",20:"100 million",10:"a billion"};
+  var MULT_LABEL = {0:"1 simulated per 100,000 real",10:"1 per 10,000 real",20:"1 per 1,000 real",30:"1 per 100 real",40:"1 per 10 real",50:"As many simulated as real",60:"10× more simulated",70:"100× more",80:"1,000× more",90:"10,000× more",100:"100,000× more — like video games"};
+
+  function rateVal(s){ return s===0?0 : s===100?0.99 : Math.pow(10,(s-100)/10); }
+  function multVal(s){ return Math.pow(10,(s-50)/10); }
+
+  // ---------- state ----------
+  var S = {gut:50, g1:50, g2:50, g3:50, g4:50, g5:50, g6:0, screen:0, shared:false, tried:null};
+  var walled = {};
+
+  // ---------- model ----------
+  function model(s){
+    var c1=s.g1/100, c2=s.g2/100, sv=rateVal(s.g3), ch=s.g4/100, N=multVal(s.g5);
+    var pre=c1*c2, fp=sv*ch, r=fp*N;
+    var b = N*ch;
+    var S1 = r;
+    var S3 = r*(1+b+b*b);
+    var Sinf = b<1 ? r/(1-b) : Infinity;
+    var f0 = S1/(1+S1);
+    var f3 = S3/(1+S3);
+    var fInf = b<1 ? Sinf/(1+Sinf) : 1;
+    var f = s.g6===0?f0 : s.g6===1?f3 : fInf;
+    var nestMult = s.g6===0?1 : s.g6===1?(1+b+b*b) : (b<1?1/(1-b):Infinity);
+    var wallAt = s.g1===0?1 : s.g2===0?2 : s.g3===0?3 : s.g4===0?4 : 0;
+    return {c1:c1,c2:c2,sv:sv,ch:ch,N:N,pre:pre,fp:fp,r:r,b:b,nestMult:nestMult,f0:f0,f:f,final:pre*f,wallAt:wallAt};
+  }
+  function maxed(s,i){
+    var t = Object.assign({},s);
+    if(i===1)t.g1=100; if(i===2)t.g2=100; if(i===3)t.g3=100; if(i===4)t.g4=100; if(i===5)t.g5=100; if(i===6)t.g6=2;
+    return t;
+  }
+  function binding(s){
+    var m = model(s);
+    if(m.wallAt) return {gate:m.wallAt, jump:0, to:model(maxed(s,m.wallAt)).final, wall:true};
+    var best={gate:0,jump:-1,to:0};
+    for(var i=1;i<=6;i++){
+      var to = model(maxed(s,i)).final, j = to-m.final;
+      if(j>best.jump+1e-12){best={gate:i,jump:j,to:to};}
+    }
+    return best;
+  }
+
+  // ---------- formatting ----------
+  function fmtInt(n){ return Math.round(n).toLocaleString("en-US"); }
+  function fmtPct(p){
+    if(p<=0) return "0%";
+    var x=p*100;
+    if(x>=99.95) return "99.9%+";
+    if(x>=99) return (Math.round(x*10)/10)+"%";
+    if(x>=10) return Math.round(x)+"%";
+    if(x>=1) return (Math.round(x*10)/10)+"%";
+    if(x>=0.01) return (Math.round(x*100)/100)+"%";
+    return "<0.01%";
+  }
+  function sig2(n){ var m=Math.pow(10,Math.floor(Math.log10(n))-1); return Math.round(n/m)*m; }
+  function oneIn(p){ if(p<=0) return ""; if(p>=0.5) return ""; return "about 1 in "+fmtInt(sig2(1/p)); }
+  function fmtMult(N){ return N>=1 ? fmtInt(N)+"×" : "1 per "+fmtInt(1/N); }
+  function fmtR(r){ if(r>=1) return fmtInt(r)+" simulated for every real mind"; if(r>=0.01) return (Math.round(r*100)/100)+" simulated per real mind"; return "1 simulated for every "+fmtInt(1/r)+" real minds"; }
+  function tenths(v){ return (v/10)+"-in-10"; }
+
+  function translate(g){
+    var v=S[g.k];
+    if(g.k==="g1"){ if(v===0)return "You're saying: <b>never.</b> Nothing built can ever be conscious — only reflect."; if(v===100)return "You're saying: <b>certain.</b> Build the pattern right, and someone's looking back."; return "You're saying: a <b>"+tenths(v)+"</b> chance that a truly conscious thing could ever be built."; }
+    if(g.k==="g2"){ if(v===0)return "You're saying: <b>impossible.</b> No universe could ever foot the bill."; if(v===100)return "You're saying: <b>certain.</b> The physics easily allows it."; return "You're saying: a <b>"+tenths(v)+"</b> chance the physics allows a machine powerful enough."; }
+    if(g.k==="g3"){ if(v===0)return "You're saying: <b>no civilization ever makes it.</b>"; if(v===100)return "You're saying: <b>almost every</b> civilization like ours makes it."; return "You're saying: of every <b>"+RATE_N[v]+"</b> civilizations like ours, <b>one</b> survives long enough."; }
+    if(g.k==="g4"){ if(v===0)return "You're saying: <b>none would.</b> It's forbidden everywhere, forever."; if(v===100)return "You're saying: <b>every one</b> of them would."; return "You're saying: <b>"+(v/10)+" in 10</b> civilizations that could, would."; }
+    if(g.k==="g5"){ var N=multVal(v); if(N>=1) return "You're saying: for every real person, they make <b>"+fmtInt(N)+"</b> simulated one"+(N>1?"s":"")+"."; return "You're saying: for every <b>"+fmtInt(1/N)+"</b> real people, they make <b>one</b> simulated person."; }
+    if(g.k==="g6"){
+      var mm=model(S); var bb=mm.b; var bTxt = bb>=1 ? fmtInt(bb)+" simulators' worth" : (Math.round(bb*100)/100)+" of a simulator";
+      var tip = v===0 ? "" : " At your other settings, each simulated level would spawn <b>"+bTxt+"</b> — "+(bb>=1?"<b>past</b> the tipping point of 1, so the levels "+(v===2?"never end.":"grow fast for three levels."):"<b>below</b> the tipping point of 1, so it thins out.");
+      return ["You're saying: <b>one level only.</b> Simulations don't build simulations.","You're saying: <b>a few levels deep.</b> It happens, then it stops.","You're saying: <b>infinite levels.</b> Every level builds the next."][v] + tip;
+    }
+    return "";
+  }
+  function valueLabel(g){
+    var v=S[g.k];
+    if(g.type==="pct") return v+"%";
+    if(g.type==="rate") return RATE_LABEL[v];
+    if(g.type==="mult") return MULT_LABEL[v];
+    return "";
+  }
+  function gateSetting(g){
+    var v=S[g.k];
+    if(g.type==="pct") return v+"%";
+    if(g.type==="rate") return v===100?"nearly all":v===0?"none":"1 in "+RATE_N[v];
+    if(g.type==="mult") return fmtMult(multVal(v));
+    return ["one level only","a few levels deep","infinite levels"][v];
+  }
+  function bars(g){ var v=S[g.k]; var n = g.type==="choice" ? (v===0?1:v===1?3:5) : Math.round(v/20); var s=""; for(var i=0;i<5;i++) s+= i<n?"▰":"▱"; return s; }
+
+  // ---------- archetype ----------
+  var BIND_LABEL = {1:"The Empty Mirror",2:"the Physics Budget",3:"the Great Filter",4:"Anti-Natalism",5:"Small-Batch Simulation",6:"Single-Level Thinking"};
+  var BIND_NOUN  = {1:"a Mirror Skeptic",2:"a Budget Hawk",3:"a Great Filter Believer",4:"an Anti-Natalist",5:"a Minimalist",6:"a Single-Level Skeptic"};
+  var DOUBT = {
+    1:"Your doubt lives in the mirror: you don't think anything built could ever truly feel — only reflect. Searle, Penrose, and Tononi are with you; the functionalists aren't.",
+    2:"Your doubt is about the bill: you don't think any universe can afford to run minds at scale — a hard information ceiling, not just a price tag.",
+    3:"Your doubt is the Great Filter: you think almost nobody survives long enough to build this. That's the same cosmic silence Fermi first noticed.",
+    4:"Your doubt is ethical: you think civilizations that could, wouldn't. That's the anti-natalist's case — creating suffering minds without consent is wrong, full stop.",
+    5:"Your doubt is about scale: you think even willing civilizations would keep it to a few careful runs — and this is the dial that moves the answer most.",
+    6:"Your doubt is about depth: you don't think simulations would go on to build their own. That's the one belief keeping rare survival from being overwhelmed by simulations-inside-simulations — turn it on and watch."
+  };
+  var MAX_LABEL = {1:"“Yes, someone's looking back” (100%)",2:"“Yes, just render what's watched” (100%)",3:"“Nearly all make it through”",4:"“Always, nobody holds back” (100%)",5:"“Mass-produced, like video games”",6:"“Infinite levels”"};
+  function band(p){ return p<0.01?"Base Reality Believer":p<0.10?"Mostly Real":p<0.35?"Nervous Realist":p<0.65?"Coin-Flipper":p<0.90?"Probably a Sim":"Neo"; }
+  function archetype(s){
+    var m=model(s), b=binding(s);
+    var elon = s.g1===100&&s.g2===100&&s.g3===100&&s.g4===100&&s.g5===100&&s.g6===2;
+    if(elon) return {title:"Elon.", sub:"Billions to one. Congratulations."};
+    if(m.wallAt) return {title:"Base Reality Believer", sub:"The chain breaks at "+G[m.wallAt-1].name+". Nothing else you believe matters."};
+    var t = band(m.final);
+    if(b.jump<0.02 && m.final>=0.9) return {title:t+".", sub:"No reservations."};
+    return {title:t+", held back by "+BIND_LABEL[b.gate], sub:"Which makes you "+BIND_NOUN[b.gate]+"."};
+  }
+
+  var FAMOUS = [
+    {n:"Hossenfelder",p:3,q:"Physicist — calls it pseudoscience, not a testable hypothesis"},
+    {n:"Bostrom",p:25,q:"The argument's creator — says at least one of three claims must be true, without picking his own number"},
+    {n:"Chalmers",p:35,q:"Philosopher, Reality+ — won't rule it out; says a simulated life is no less real"},
+    {n:"Kipping",p:45,q:"Astronomer — ran the Bayesian math himself: a shade under 50-50"},
+    {n:"Tyson",p:50,q:"Astrophysicist — has put it at roughly 50-50 odds"},
+    {n:"Musk",p:99.9999,q:"“One in billions” odds we're NOT simulated"}
+  ];
+
+  // ---------- share / url ----------
+  function encodeState(){ return [S.g1,S.g2,S.g3,S.g4,S.g5,S.g6,S.gut].join("-"); }
+  function decodeState(h){
+    var m = /r=([\d-]+)/.exec(h||""); if(!m) return false;
+    var p = m[1].split("-").map(Number); if(p.length<7 || p.some(isNaN)) return false;
+    S.g1=clamp10(p[0]); S.g2=clamp10(p[1]); S.g3=clamp10(p[2]); S.g4=clamp10(p[3]); S.g5=clamp10(p[4]); S.g6=Math.min(2,Math.max(0,p[5]|0)); S.gut=Math.min(100,Math.max(0,p[6]|0));
+    return true;
+  }
+  function clamp10(v){ v=Math.round(v/10)*10; return Math.min(100,Math.max(0,v)); }
+  function shareUrl(){ return location.href.split("#")[0] + "#r=" + encodeState(); }
+  function shareText(){
+    var m=model(S), a=archetype(S);
+    var line = "🔮 I'm "+fmtPct(m.final)+" simulated.";
+    var gl = G.map(function(g){ return g.em+bars(g); }).join(" ");
+    return line+"\n"+a.title+"\n"+gl+"\nMy gut said "+S.gut+"%. What's yours?\n"+shareUrl();
+  }
+
+  // ==================================================================
+  // SIGIL ENGINE — six distinct hand-drawn visual metaphors, one per
+  // gate. The flower-of-life mandala below is kept exclusively for the
+  // result screen's composite reading.
+  // ==================================================================
+  var SIG = { violet:"#712791", gold:"#866313", indigo:"#3D2E9E", pink:"#D03985", ink:"#39193E", muted:"#73487A", card:"#FDFAFC" };
+
+  function withAlpha(hex, a){
+    hex = hex.replace('#','');
+    var r=parseInt(hex.substr(0,2),16), g=parseInt(hex.substr(2,2),16), b=parseInt(hex.substr(4,2),16);
+    return 'rgba('+r+','+g+','+b+','+a+')';
+  }
+  function mixHex(hexA, hexB, t){
+    hexA=hexA.replace('#',''); hexB=hexB.replace('#','');
+    var ar=parseInt(hexA.substr(0,2),16), ag=parseInt(hexA.substr(2,2),16), ab=parseInt(hexA.substr(4,2),16);
+    var br=parseInt(hexB.substr(0,2),16), bg=parseInt(hexB.substr(2,2),16), bb=parseInt(hexB.substr(4,2),16);
+    var r=Math.round(ar+(br-ar)*t), g=Math.round(ag+(bg-ag)*t), b=Math.round(ab+(bb-ab)*t);
+    return 'rgb('+r+','+g+','+b+')';
+  }
+  function seededRand(seed){
+    var s = seed;
+    return function(){ s = (s*9301+49297)%233280; return s/233280; };
+  }
+
+  // Gate 1 — Conscious: Waking Eye
+  function sigilConscious(v){
+    var t = v/100;
+    var open = 50*t;
+    var eyePath = 'M10,100 Q100,'+(100-open)+' 190,100 Q100,'+(100+open)+' 10,100 Z';
+    var irisR = 11+37*t;
+    var pupilR = irisR*0.4;
+
+    var lashCount = 7, lashes = '';
+    for(var i=0;i<lashCount;i++){
+      var f = i/(lashCount-1);
+      var x = 20+f*160;
+      var yLid = 100-open*0.94*Math.sin(Math.PI*f);
+      var lift = 6+9*t;
+      var curve = (f-0.5)*13;
+      var x2 = x+curve*t, y2 = yLid-lift;
+      lashes += '<path d="M'+x.toFixed(1)+','+yLid.toFixed(1)+' Q'+(x+curve*0.5).toFixed(1)+','+(yLid-lift*0.6).toFixed(1)+' '+x2.toFixed(1)+','+y2.toFixed(1)+'" fill="none" stroke="'+SIG.violet+'" stroke-width="1.2" opacity="'+(0.6*t)+'" stroke-linecap="round"/>';
+    }
+
+    var s = '<defs>'+
+      '<radialGradient id="eyeAura" cx="50%" cy="50%" r="50%">'+
+        '<stop offset="0%" stop-color="'+SIG.pink+'" stop-opacity="'+(0.26*t)+'"/>'+
+        '<stop offset="55%" stop-color="'+SIG.violet+'" stop-opacity="'+(0.12*t)+'"/>'+
+        '<stop offset="100%" stop-color="'+SIG.violet+'" stop-opacity="0"/>'+
+      '</radialGradient>'+
+      '<radialGradient id="eyeIris" cx="45%" cy="42%" r="65%">'+
+        '<stop offset="0%" stop-color="'+SIG.pink+'" stop-opacity=".9"/>'+
+        '<stop offset="35%" stop-color="'+SIG.violet+'"/>'+
+        '<stop offset="78%" stop-color="'+SIG.indigo+'"/>'+
+        '<stop offset="100%" stop-color="'+SIG.gold+'" stop-opacity=".92"/>'+
+      '</radialGradient>'+
+      '<linearGradient id="eyeLid" x1="0%" y1="0%" x2="100%" y2="0%">'+
+        '<stop offset="0%" stop-color="'+SIG.gold+'"/>'+
+        '<stop offset="50%" stop-color="'+SIG.violet+'"/>'+
+        '<stop offset="100%" stop-color="'+SIG.gold+'"/>'+
+      '</linearGradient>'+
+      '<clipPath id="eyeClip"><path d="'+eyePath+'"/></clipPath>'+
+    '</defs>';
+
+    s += '<circle cx="100" cy="100" r="'+(78+26*t)+'" fill="url(#eyeAura)"><animate attributeName="r" values="'+(78+26*t)+';'+(84+26*t)+';'+(78+26*t)+'" dur="5s" repeatCount="indefinite"/></circle>';
+
+    var rnd = seededRand(321);
+    for(var d=0; d<5; d++){
+      var dAng = rnd()*Math.PI*2, dR = 80+rnd()*16;
+      var dx = 100+Math.cos(dAng)*dR, dy = 100+Math.sin(dAng)*dR;
+      var dDur = 3+rnd()*2.6, dDelay=-(rnd()*4).toFixed(1);
+      s += '<circle cx="'+dx.toFixed(1)+'" cy="'+dy.toFixed(1)+'" r="'+(0.7+rnd()*0.9)+'" fill="'+(d%2===0?SIG.gold:SIG.pink)+'" opacity="0">'+
+        '<animate attributeName="opacity" values="0;'+(0.35+0.25*t)+';0" dur="'+dDur+'s" begin="'+dDelay+'s" repeatCount="indefinite"/>'+
+        '</circle>';
+    }
+
+    s += '<path d="'+eyePath+'" fill="'+withAlpha(SIG.card,0.95)+'" opacity="'+(0.4+0.6*t)+'"/>';
+
+    s += '<g clip-path="url(#eyeClip)">';
+    if(t>0.03){
+      var op = Math.min(1,(t-0.03)*1.3);
+      var stri='', nStri=24;
+      for(var k=0;k<nStri;k++){
+        var a=(k/nStri)*Math.PI*2;
+        var r1=irisR*0.5, r2=irisR*0.97;
+        var x1s=100+Math.cos(a)*r1, y1s=100+Math.sin(a)*r1;
+        var x2s=100+Math.cos(a)*r2, y2s=100+Math.sin(a)*r2;
+        stri += '<line x1="'+x1s.toFixed(1)+'" y1="'+y1s.toFixed(1)+'" x2="'+x2s.toFixed(1)+'" y2="'+y2s.toFixed(1)+'" stroke="'+SIG.indigo+'" stroke-width=".5" opacity="'+(0.28*op)+'"/>';
+      }
+      s += '<circle cx="100" cy="100" r="'+irisR+'" fill="url(#eyeIris)" opacity="'+op+'">'+
+        '<animate attributeName="r" values="'+irisR+';'+(irisR*1.05)+';'+irisR+'" dur="3.4s" repeatCount="indefinite"/>'+
+        '</circle>'+
+        '<g><animateTransform attributeName="transform" type="rotate" from="0 100 100" to="360 100 100" dur="46s" repeatCount="indefinite"/>'+stri+'</g>'+
+        '<circle cx="100" cy="100" r="'+irisR+'" fill="none" stroke="'+SIG.gold+'" stroke-width=".8" opacity="'+(0.5*op)+'"/>'+
+        '<circle cx="100" cy="100" r="'+pupilR+'" fill="'+SIG.ink+'" opacity="'+(0.85*op)+'">'+
+        '<animate attributeName="r" values="'+pupilR+';'+(pupilR*0.9)+';'+pupilR+'" dur="4.6s" repeatCount="indefinite"/>'+
+        '</circle>';
+    }
+
+    if(t>0.32){
+      var gop = Math.min(1,(t-0.32)*1.7);
+      s += '<circle cx="'+(100-irisR*0.24)+'" cy="'+(100-irisR*0.26)+'" r="'+(1.9+3*t)+'" fill="'+SIG.card+'" opacity="'+gop+'">'+
+        '<animate attributeName="opacity" values="'+(gop*0.55)+';'+gop+';'+(gop*0.55)+'" dur="2.4s" repeatCount="indefinite"/>'+
+        '</circle>'+
+        '<circle cx="'+(100+irisR*0.3)+'" cy="'+(100+irisR*0.18)+'" r="'+(1+1.4*t)+'" fill="'+SIG.card+'" opacity="'+(gop*0.6)+'"/>';
+    }
+    s += '</g>';
+    s += '<path d="'+eyePath+'" fill="none" stroke="url(#eyeLid)" stroke-width="2" opacity="'+(0.4+0.6*t)+'"/>';
+
+    if(t>0.65){
+      var sop = Math.min(1,(t-0.65)*2.9);
+      [[160,58],[38,132]].forEach(function(p,si){
+        var sx=p[0], sy=p[1], scale=si===0?1:0.6;
+        s += '<path d="M'+sx+','+(sy-6*scale)+' L'+(sx+1.4*scale)+','+(sy-1.4*scale)+' L'+(sx+6*scale)+','+sy+' L'+(sx+1.4*scale)+','+(sy+1.4*scale)+' L'+sx+','+(sy+6*scale)+' L'+(sx-1.4*scale)+','+(sy+1.4*scale)+' L'+(sx-6*scale)+','+sy+' L'+(sx-1.4*scale)+','+(sy-1.4*scale)+' Z" fill="'+SIG.gold+'" opacity="'+sop+'">'+
+          '<animate attributeName="opacity" values="'+(sop*0.35)+';'+sop+';'+(sop*0.35)+'" dur="'+(1.6+si*0.6)+'s" repeatCount="indefinite"/>'+
+          '</path>';
+      });
+    }
+
+    s += lashes;
+    return s;
+  }
+
+  // Gate 2 — Physics: Copernican Sphere
+  function sigilPhysics(v){
+    var t = v/100;
+    var cols=[SIG.violet,SIG.indigo,SIG.pink,SIG.gold];
+    var rings = [
+      { rx:78, ry:22, rot:6   },
+      { rx:66, ry:36, rot:58  },
+      { rx:82, ry:14, rot:120 },
+      { rx:52, ry:52, rot:0   }
+    ];
+    var inner='';
+    rings.forEach(function(ring,i){
+      var resolved = t > 0.1+i*0.2;
+      var op = resolved ? (0.55+0.35*Math.min(1,t)) : 0.22;
+      var dash = resolved ? 'none' : '2 4';
+      var col = resolved ? cols[i%4] : SIG.muted;
+      inner += '<ellipse cx="100" cy="100" rx="'+ring.rx+'" ry="'+ring.ry+'" fill="none" stroke="'+col+'" stroke-width="'+(resolved?1.1:0.7)+'" stroke-dasharray="'+dash+'" opacity="'+op+'" transform="rotate('+ring.rot+' 100 100)"/>';
+      if(resolved){
+        var bodyCol = cols[(i+1)%4];
+        var dur = 10+i*4.5;
+        var ex1=(100+ring.rx).toFixed(1), ex2=(100-ring.rx).toFixed(1);
+        inner += '<g transform="rotate('+ring.rot+' 100 100)"><circle r="'+(2.1+1.6*t)+'" fill="'+bodyCol+'" opacity="'+(0.65+0.35*t)+'">'+
+          '<animateMotion dur="'+dur+'s" repeatCount="indefinite" path="M'+ex1+',100 A'+ring.rx+','+ring.ry+' 0 1,1 '+ex2+',100 A'+ring.rx+','+ring.ry+' 0 1,1 '+ex1+',100"/>'+
+          '</circle></g>';
+      }
+    });
+    inner += '<circle cx="100" cy="100" r="'+(5+4*t)+'" fill="'+SIG.gold+'" opacity="'+(0.55+0.4*t)+'">'+
+      '<animate attributeName="r" values="'+(4+4*t)+';'+(7.5+4*t)+';'+(4+4*t)+'" dur="3s" repeatCount="indefinite"/></circle>';
+    return '<g><animateTransform attributeName="transform" type="rotate" from="0 100 100" to="360 100 100" dur="58s" repeatCount="indefinite"/>'+inner+'</g>';
+  }
+
+  // Gate 3 — Survival: Void to Bloom
+  function petalPath(cx,cy,angleDeg,len,width){
+    var a=angleDeg*Math.PI/180, perp=a+Math.PI/2;
+    var tipX=cx+Math.cos(a)*len, tipY=cy+Math.sin(a)*len;
+    var midR=len*0.55;
+    var b1x=cx+Math.cos(a)*midR+Math.cos(perp)*width, b1y=cy+Math.sin(a)*midR+Math.sin(perp)*width;
+    var b2x=cx+Math.cos(a)*midR-Math.cos(perp)*width, b2y=cy+Math.sin(a)*midR-Math.sin(perp)*width;
+    return 'M'+cx.toFixed(1)+','+cy.toFixed(1)+' Q'+b1x.toFixed(1)+','+b1y.toFixed(1)+' '+tipX.toFixed(1)+','+tipY.toFixed(1)+' Q'+b2x.toFixed(1)+','+b2y.toFixed(1)+' '+cx.toFixed(1)+','+cy.toFixed(1)+' Z';
+  }
+  function sigilSurvival(v){
+    var t = v/100;
+    var s='';
+    var voidCy = 176;
+    var voidR = 32*(1-t*0.1);
+    var voidOp = Math.max(0.82, 1-t*0.15);
+
+    s += '<defs>'+
+      '<radialGradient id="voidGrad" cx="50%" cy="40%" r="65%">'+
+        '<stop offset="0%" stop-color="#000000"/>'+
+        '<stop offset="65%" stop-color="#160B1E"/>'+
+        '<stop offset="100%" stop-color="#2E1638" stop-opacity=".55"/>'+
+      '</radialGradient>'+
+      '<linearGradient id="stemGrad" x1="0%" y1="100%" x2="0%" y2="0%">'+
+        '<stop offset="0%" stop-color="#3A2A44"/>'+
+        '<stop offset="55%" stop-color="'+SIG.violet+'"/>'+
+        '<stop offset="100%" stop-color="'+SIG.gold+'"/>'+
+      '</linearGradient>'+
+    '</defs>';
+
+    s += '<ellipse cx="100" cy="'+voidCy+'" rx="'+(voidR*1.4)+'" ry="'+(voidR*0.52)+'" fill="url(#voidGrad)" opacity="'+voidOp+'">'+
+      '<animate attributeName="ry" values="'+(voidR*0.52)+';'+(voidR*0.58)+';'+(voidR*0.52)+'" dur="4.6s" repeatCount="indefinite"/>'+
+      '</ellipse>'+
+      '<ellipse cx="100" cy="'+voidCy+'" rx="'+(voidR*1.4)+'" ry="'+(voidR*0.52)+'" fill="none" stroke="'+SIG.muted+'" stroke-width=".6" opacity="'+(voidOp*0.3)+'"/>';
+    var rnd = seededRand(99);
+    for(var m=0;m<9;m++){
+      var ang=rnd()*Math.PI*2;
+      var mx=100+Math.cos(ang)*voidR*1.15, my=voidCy+Math.sin(ang)*voidR*0.44;
+      var dDur=2.4+rnd()*2.4, dDelay=-(rnd()*3).toFixed(1);
+      s += '<circle cx="'+mx.toFixed(1)+'" cy="'+my.toFixed(1)+'" r="'+(0.5+rnd()*0.8)+'" fill="'+SIG.muted+'" opacity="0">'+
+        '<animate attributeName="opacity" values="0;'+(voidOp*0.6)+';0" dur="'+dDur+'s" begin="'+dDelay+'s" repeatCount="indefinite"/></circle>';
+    }
+
+    var swayS = '';
+
+    var stemTopY = 168 - t*142;
+    var stemLen = voidCy-stemTopY;
+    swayS += '<path d="M100,'+voidCy+' Q110,'+((voidCy+stemTopY)/2).toFixed(1)+' 100,'+stemTopY.toFixed(1)+'" fill="none" stroke="url(#stemGrad)" stroke-width="'+(3-1*t)+'" opacity="'+(0.4+0.55*t)+'"/>';
+
+    if(t>0.18){
+      var leafOp=Math.min(1,(t-0.18)*1.6);
+      [[0.46,-1],[0.68,1],[0.85,-1]].forEach(function(pair){
+        var ly = voidCy - stemLen*pair[0];
+        var lx = 100+pair[1]*12;
+        swayS += '<ellipse cx="'+lx+'" cy="'+ly.toFixed(1)+'" rx="10" ry="4.4" fill="'+SIG.indigo+'" opacity="'+(leafOp*0.55)+'" transform="rotate('+(pair[1]*35)+' '+lx+' '+ly.toFixed(1)+')"/>';
+      });
+    }
+
+    if(t>0.36){
+      var by = Math.max(36, stemTopY);
+      var bloomT = Math.min(1,(t-0.36)/0.64);
+
+      if(bloomT>0.1){
+        var hop = Math.min(1,(bloomT-0.1)*1.25);
+        [[70,.06],[54,.1],[40,.17]].forEach(function(l){
+          swayS += '<circle cx="100" cy="'+by+'" r="'+l[0]+'" fill="'+SIG.pink+'" opacity="'+(l[1]*hop)+'"/>';
+        });
+      }
+
+      var rings=[
+        { n:12, len:62, width:10.5, rotOff:8,  thresh:0,    col:SIG.pink   },
+        { n:8,  len:37, width:7.2,  rotOff:20, thresh:0.26, col:SIG.violet },
+        { n:6,  len:22, width:4.6,  rotOff:0,  thresh:0.48, col:SIG.indigo }
+      ];
+      rings.forEach(function(ring){
+        if(bloomT<=ring.thresh) return;
+        var localT=Math.min(1,(bloomT-ring.thresh)/(1-ring.thresh)*1.8);
+        var len=ring.len*localT, op=0.62+0.33*localT;
+        for(var i=0;i<ring.n;i++){
+          var ang=(i/ring.n)*360+ring.rotOff;
+          swayS += '<path d="'+petalPath(100,by,ang,len,ring.width*localT)+'" fill="'+ring.col+'" opacity="'+op+'"/>';
+        }
+      });
+
+      if(bloomT>0.5){
+        var cop=Math.min(1,(bloomT-0.5)*2.4);
+        swayS += '<circle cx="100" cy="'+by+'" r="'+(3.6+8.5*cop)+'" fill="'+SIG.gold+'" opacity="'+cop+'">'+
+          '<animate attributeName="opacity" values="'+(cop*0.6)+';'+cop+';'+(cop*0.6)+'" dur="2.2s" repeatCount="indefinite"/></circle>';
+      }
+      if(bloomT>0.7){
+        var sop=Math.min(1,(bloomT-0.7)*3.6);
+        [[56,by-44],[146,by-36],[134,by+38],[64,by+34],[100,by-56]].forEach(function(p,si){
+          var sc = si===4?0.7:1;
+          swayS += '<path d="M'+p[0]+','+(p[1]-5*sc)+' L'+(p[0]+1.2*sc)+','+(p[1]-1.2*sc)+' L'+(p[0]+5*sc)+','+p[1]+' L'+(p[0]+1.2*sc)+','+(p[1]+1.2*sc)+' L'+p[0]+','+(p[1]+5*sc)+' L'+(p[0]-1.2*sc)+','+(p[1]+1.2*sc)+' L'+(p[0]-5*sc)+','+p[1]+' L'+(p[0]-1.2*sc)+','+(p[1]-1.2*sc)+' Z" fill="'+SIG.gold+'" opacity="'+sop+'">'+
+            '<animate attributeName="opacity" values="'+(sop*0.35)+';'+sop+';'+(sop*0.35)+'" dur="'+(1.6+si*0.25)+'s" repeatCount="indefinite"/></path>';
+        });
+      }
+    }
+
+    s += '<g><animateTransform attributeName="transform" type="rotate" values="-2.5 100 '+voidCy+'; 2.5 100 '+voidCy+'; -2.5 100 '+voidCy+'" dur="7s" repeatCount="indefinite"/>'+swayS+'</g>';
+    return s;
+  }
+
+  // Gate 4 — Choice: Forking Path
+  function branchTree(x,y,ang,len,depth,maxDepth,spreadT,op,rnd){
+    if(depth>maxDepth || len<0.9 || op<0.035) return '';
+    var jitter = (rnd()-0.5)*15;
+    var rad=(ang+jitter*0.45)*Math.PI/180;
+    var x2=x+Math.cos(rad)*len, y2=y-Math.sin(rad)*len;
+    var mx=(x+x2)/2, my=(y+y2)/2;
+    var curl = (rnd()-0.5)*len*0.55;
+    var perpAng = rad+Math.PI/2;
+    var cx=mx+Math.cos(perpAng)*curl, cy=my+Math.sin(perpAng)*curl;
+    var hueMix = depth/maxDepth;
+    var col = mixHex(SIG.violet, hueMix>0.55?SIG.pink:SIG.gold, Math.min(1,hueMix*1.3));
+    var s = '<path d="M'+x.toFixed(1)+','+y.toFixed(1)+' Q'+cx.toFixed(1)+','+cy.toFixed(1)+' '+x2.toFixed(1)+','+y2.toFixed(1)+'" fill="none" stroke="'+col+'" stroke-width="'+(0.3+(maxDepth-depth)*0.3)+'" opacity="'+op+'"/>';
+    if(depth===maxDepth) s += '<circle cx="'+x2.toFixed(1)+'" cy="'+y2.toFixed(1)+'" r="'+(0.85+1.05*spreadT)+'" fill="'+SIG.pink+'" opacity="'+op+'"/>';
+    var spreadAng = 11+spreadT*25;
+    var j1=(rnd()-0.5)*13, j2=(rnd()-0.5)*13;
+    s += branchTree(x2,y2,ang-spreadAng+j1,len*0.79,depth+1,maxDepth,spreadT,op*0.89,rnd);
+    s += branchTree(x2,y2,ang+spreadAng+j2,len*0.79,depth+1,maxDepth,spreadT,op*0.89,rnd);
+    return s;
+  }
+  function sigilChoice(v){
+    var t = v/100;
+    var steps = 8;
+    var maxDepth = 1+Math.min(steps, Math.floor(t*(steps+1)));
+    var stepSize = 1/(steps+1);
+    var stepProgress = Math.min(1,(t-(maxDepth-1)*stepSize)/stepSize);
+    var baseLen = 18+stepProgress*6.5;
+    var op = 0.55+0.45*t;
+    var rnd = seededRand(555);
+    var tree = branchTree(100,188,90,baseLen,1,maxDepth,t,op,rnd);
+    return '<g><animateTransform attributeName="transform" type="rotate" values="-1.5 100 188; 1.5 100 188; -1.5 100 188" dur="8s" repeatCount="indefinite"/>'+tree+'</g>';
+  }
+
+  // Gate 5 — Intensity: Nautilus Shell
+  function nautilusArm(t, phase, turns, b, a, steps, colFrom, colTo){
+    var visSteps=Math.round(steps*t);
+    var pts=[];
+    for(var i=0;i<=visSteps;i++){
+      var theta=(i/steps)*turns*2*Math.PI;
+      var r=a*Math.exp(b*theta);
+      if(r>93) break;
+      var th=theta+phase;
+      pts.push([100+Math.cos(th)*r, 100+Math.sin(th)*r]);
+    }
+    var seg='';
+    for(var j=1;j<pts.length;j++){
+      var p0=pts[j-1], p1=pts[j], frac=j/pts.length;
+      var col=mixHex(colFrom, colTo, Math.min(1,frac*1.25));
+      seg += '<line x1="'+p0[0].toFixed(1)+'" y1="'+p0[1].toFixed(1)+'" x2="'+p1[0].toFixed(1)+'" y2="'+p1[1].toFixed(1)+'" stroke="'+col+'" stroke-width="'+(2.2-1.6*frac)+'" opacity=".92"/>';
+    }
+    return { seg:seg, pts:pts };
+  }
+  function sigilIntensity(v){
+    var t = v/100;
+    var turns=4.4, b=0.144, a=2.1, steps=260;
+    var arm1 = nautilusArm(t, 0, turns, b, a, steps, SIG.indigo, SIG.gold);
+    var arm2 = nautilusArm(t, Math.PI, turns*0.92, b*1.05, a*1.35, steps, SIG.violet, SIG.pink);
+    var s = arm1.seg + arm2.seg;
+
+    var pts = arm1.pts;
+    for(var k=5;k<pts.length;k+=5){
+      var p=pts[k], p0b=pts[k-1];
+      var dx=p[0]-p0b[0], dy=p[1]-p0b[1], len=Math.sqrt(dx*dx+dy*dy)||1;
+      var nx=-dy/len*4, ny=dx/len*4;
+      s += '<line x1="'+(p[0]-nx).toFixed(1)+'" y1="'+(p[1]-ny).toFixed(1)+'" x2="'+(p[0]+nx).toFixed(1)+'" y2="'+(p[1]+ny).toFixed(1)+'" stroke="'+SIG.muted+'" stroke-width=".5" opacity=".35"/>';
+    }
+    var pts2 = arm2.pts;
+    for(var m=1;m<pts2.length;m++){
+      var q0=pts2[m-1], q1=pts2[m];
+      var ddx=q1[0]-q0[0], ddy=q1[1]-q0[1], ll=Math.sqrt(ddx*ddx+ddy*ddy)||1;
+      var offx=-ddy/ll*3, offy=ddx/ll*3;
+      s += '<line x1="'+(q0[0]+offx).toFixed(1)+'" y1="'+(q0[1]+offy).toFixed(1)+'" x2="'+(q1[0]+offx).toFixed(1)+'" y2="'+(q1[1]+offy).toFixed(1)+'" stroke="'+SIG.pink+'" stroke-width=".4" opacity=".28"/>';
+    }
+
+    if(pts.length>1){
+      var last1=pts[pts.length-1];
+      s += '<circle cx="'+last1[0].toFixed(1)+'" cy="'+last1[1].toFixed(1)+'" r="2.8" fill="'+SIG.gold+'" opacity=".95"/>';
+    }
+    if(pts2.length>1){
+      var last2=pts2[pts2.length-1];
+      s += '<circle cx="'+last2[0].toFixed(1)+'" cy="'+last2[1].toFixed(1)+'" r="2.4" fill="'+SIG.pink+'" opacity=".95"/>';
+    }
+    s += '<circle cx="100" cy="100" r="1.8" fill="'+SIG.violet+'" opacity=".65"><animate attributeName="opacity" values=".4;.85;.4" dur="3s" repeatCount="indefinite"/></circle>';
+
+    return '<g><animateTransform attributeName="transform" type="rotate" from="0 100 100" to="360 100 100" dur="90s" repeatCount="indefinite"/>'+s+'</g>';
+  }
+
+  // Gate 6 — Nesting: Recursive Frame
+  function sigilNesting(mode){
+    var levels = mode===0?1:mode===1?4:9;
+    var simple = mode===0;
+    var wild = mode===2;
+    var cols=[SIG.indigo,SIG.violet,SIG.pink,SIG.gold];
+    var s='';
+    for(var i=0;i<levels;i++){
+      var r=90-i*(78/levels), op=0.85-i*(0.6/levels);
+      var dir = i%2===0?1:-1;
+      var from=i*6, to=from+dir*360;
+      var rotDur = simple ? 28 : wild ? (3.2+i*0.55) : (9+i*1.7);
+      s += '<rect x="'+(100-r)+'" y="'+(100-r)+'" width="'+(r*2)+'" height="'+(r*2)+'" rx="'+(r*0.28)+'" fill="none" stroke="'+cols[i%4]+'" stroke-width="1.1" opacity="'+op+'">'+
+        '<animateTransform attributeName="transform" type="rotate" from="'+from+' 100 100" to="'+to+' 100 100" dur="'+rotDur+'s" repeatCount="indefinite"/>';
+      if(!simple){
+        var colDur = wild ? (1.6+i*0.22) : (5+i*0.7);
+        s += '<animate attributeName="stroke" values="'+cols.join(';')+';'+cols[0]+'" dur="'+colDur+'s" begin="-'+(i*0.9)+'s" repeatCount="indefinite"/>';
+      }
+      s += '</rect>';
+    }
+
+    if(wild){
+      var spokes='', nSpokes=16;
+      for(var sp=0; sp<nSpokes; sp++){
+        var a=(sp/nSpokes)*360, rad=a*Math.PI/180;
+        var x2=100+Math.cos(rad)*94, y2=100+Math.sin(rad)*94;
+        spokes += '<line x1="100" y1="100" x2="'+x2.toFixed(1)+'" y2="'+y2.toFixed(1)+'" stroke="'+cols[sp%4]+'" stroke-width=".6" opacity=".38"/>';
+      }
+      s += '<g><animateTransform attributeName="transform" type="rotate" from="360 100 100" to="0 100 100" dur="5.5s" repeatCount="indefinite"/>'+spokes+'</g>';
+      for(var w=0; w<4; w++){
+        var wDelay = -(w*0.85);
+        s += '<circle cx="100" cy="100" r="6" fill="none" stroke="'+cols[w%4]+'" stroke-width="1.1" opacity="0">'+
+          '<animate attributeName="r" values="6;96" dur="3.4s" begin="'+wDelay+'s" repeatCount="indefinite"/>'+
+          '<animate attributeName="opacity" values=".65;0" dur="3.4s" begin="'+wDelay+'s" repeatCount="indefinite"/>'+
+          '</circle>';
+      }
+    }
+
+    var tunnelN = wild?10:mode===1?4:0;
+    var tDur = wild?2:3.4;
+    for(var k=0;k<tunnelN;k++){
+      var delay = -(k*(tDur/tunnelN));
+      s += '<rect rx="26" fill="none" stroke="'+cols[k%4]+'" stroke-width="1" opacity="0">'+
+        '<animate attributeName="x" values="8;99" dur="'+tDur+'s" begin="'+delay+'s" repeatCount="indefinite"/>'+
+        '<animate attributeName="y" values="8;99" dur="'+tDur+'s" begin="'+delay+'s" repeatCount="indefinite"/>'+
+        '<animate attributeName="width" values="184;2" dur="'+tDur+'s" begin="'+delay+'s" repeatCount="indefinite"/>'+
+        '<animate attributeName="height" values="184;2" dur="'+tDur+'s" begin="'+delay+'s" repeatCount="indefinite"/>'+
+        '<animate attributeName="opacity" values="0;.6;0" dur="'+tDur+'s" begin="'+delay+'s" repeatCount="indefinite"/>'+
+        '</rect>';
+    }
+    var coreR = wild?12.5:mode===1?6:4.5;
+    if(simple){
+      s += '<circle cx="100" cy="100" r="'+coreR+'" fill="'+SIG.gold+'" opacity=".8">'+
+        '<animate attributeName="r" values="'+(coreR*0.8)+';'+(coreR*1.25)+';'+(coreR*0.8)+'" dur="3.2s" repeatCount="indefinite"/>'+
+        '</circle>';
+    } else {
+      s += '<circle cx="100" cy="100" r="'+coreR+'" fill="'+SIG.gold+'" opacity=".9">'+
+        '<animate attributeName="fill" values="'+cols.join(';')+';'+cols[0]+'" dur="'+(wild?1.4:4.2)+'s" repeatCount="indefinite"/>'+
+        '<animate attributeName="r" values="'+(coreR*0.6)+';'+(coreR*1.55)+';'+(coreR*0.6)+'" dur="'+(wild?1:2.2)+'s" repeatCount="indefinite"/>'+
+        '</circle>';
+    }
+    return s;
+  }
+
+  // ==================================================================
+  // MANDALA ENGINE — flower-of-life composite, kept for the result screen
+  // ==================================================================
+  var GOLD="#866313", PEACH="#F0BFE5", PINK="#D03985", INK="#39193E";
+  var PETALS=[[100,70],[100,130],[74,85],[126,85],[74,115],[126,115]];
+
+  function backdrop(){
+    return '<defs><radialGradient id="nebG" cx="50%" cy="45%" r="55%">'+
+      '<stop offset="0%" stop-color="'+PEACH+'" stop-opacity=".35"/>'+
+      '<stop offset="55%" stop-color="'+PINK+'" stop-opacity=".18"/>'+
+      '<stop offset="100%" stop-color="'+GOLD+'" stop-opacity="0"/></radialGradient></defs>'+
+      '<circle cx="100" cy="100" r="92" fill="url(#nebG)"/>'+
+      '<g fill="'+GOLD+'"><circle cx="60" cy="50" r="1.1" opacity=".4"/><circle cx="148" cy="58" r="1" opacity=".32"/><circle cx="145" cy="145" r="1.2" opacity=".35"/><circle cx="52" cy="145" r="1" opacity=".32"/></g>';
+  }
+  function boundaryRing(op, dash){ return '<circle cx="100" cy="100" r="88" fill="none" stroke="'+GOLD+'" stroke-width=".7" opacity="'+op+'"'+(dash?' stroke-dasharray="'+dash+'"':'')+'/>'; }
+  function petalRing(op, sw, dash){
+    var d = dash?(' stroke-dasharray="'+dash+'"'):'';
+    return PETALS.map(function(p){return '<circle cx="'+p[0]+'" cy="'+p[1]+'" r="30" fill="none" stroke="'+GOLD+'" stroke-width="'+sw+'" opacity="'+op+'"'+d+'/>';}).join('')+
+      '<circle cx="100" cy="100" r="30" fill="none" stroke="'+GOLD+'" stroke-width="'+sw+'" opacity="'+op+'"'+d+'/>';
+  }
+  function centerDot(r, op){ return '<circle cx="100" cy="100" r="'+r+'" fill="'+INK+'" opacity="'+op+'"/>'; }
+  function miniFlower(cx,cy,scale,op,sw){
+    sw = sw||2.4;
+    var pts=[[0,-30],[0,30],[-26,-15],[26,-15],[-26,15],[26,15],[0,0]];
+    var g = pts.map(function(p){return '<circle cx="'+p[0]+'" cy="'+p[1]+'" r="30" fill="none" stroke="'+GOLD+'" stroke-width="'+sw+'" opacity="'+op+'"/>';}).join('');
+    return '<g transform="translate('+cx+','+cy+') scale('+scale+')">'+g+'</g>';
+  }
+  function svgWrap(inner){ return '<svg viewBox="0 0 200 200">'+inner+'</svg>'; }
+  function setMandala(hostId, inner){ var host=document.getElementById(hostId); if(host) host.innerHTML = svgWrap(inner); }
+
+  // Composite — your reading: every gate's transformation, layered into one sigil
+  function mandalaComposite(s){
+    var t1=s.g1/100, t2=s.g2/100, pre=t1*t2;
+    var healthy=Math.round((s.g3/100)*6);
+    var choiceT=s.g4/100, intensityT=s.g5/100;
+    var inner=backdrop()+boundaryRing(0.25+0.3*pre);
+    PETALS.forEach(function(p,i){
+      if(i<healthy) inner+='<circle cx="'+p[0]+'" cy="'+p[1]+'" r="30" fill="none" stroke="'+GOLD+'" stroke-width="'+(0.8+0.5*pre)+'" opacity="'+(0.25+0.55*pre)+'"/>';
+      else inner+='<circle cx="'+p[0]+'" cy="'+p[1]+'" r="30" fill="none" stroke="'+GOLD+'" stroke-width=".6" opacity=".15" stroke-dasharray="2 5"/>';
+    });
+    inner += (healthy>=6?'<circle cx="100" cy="100" r="30" fill="none" stroke="'+GOLD+'" stroke-width="'+(0.8+0.5*pre)+'" opacity="'+(0.25+0.55*pre)+'"/>':'<circle cx="100" cy="100" r="30" fill="none" stroke="'+GOLD+'" stroke-width=".6" opacity=".18" stroke-dasharray="2 5"/>');
+    var outerPos=[[100,26],[174,66],[174,134],[100,174],[26,134],[26,66]];
+    var n=choiceT*6;
+    outerPos.forEach(function(p,i){ var op=Math.max(0,Math.min(1,n-i)); if(op>0) inner+=miniFlower(p[0],p[1],.22,op*.55,2.6); });
+    var field=[{p:[18,15],s:.16,o:.5},{p:[182,20],s:.14,o:.45},{p:[20,182],s:.15,o:.5},{p:[182,168],s:.16,o:.5},{p:[90,8],s:.13,o:.4},{p:[100,192],s:.14,o:.45}];
+    var fcount=Math.round(intensityT*field.length);
+    for(var i=0;i<fcount;i++){ inner+=miniFlower(field[i].p[0],field[i].p[1],field[i].s,field[i].o,3); }
+    if(s.g6>=1){ PETALS.forEach(function(p){ inner+=miniFlower(p[0],p[1],.22,s.g6===2?.55:.6,2.4); }); }
+    if(s.g6===2){ inner+='<circle cx="100" cy="100" r="20" fill="none" stroke="'+PEACH+'" stroke-width=".6" opacity=".5"/><circle cx="100" cy="100" r="13" fill="none" stroke="'+PEACH+'" stroke-width=".6" opacity=".65"/>'; }
+    var m=model(s);
+    var cr = 4+9*Math.sqrt(Math.max(0,Math.min(1,m.final)));
+    inner += centerDot(cr, 0.85+0.15*Math.min(1,m.final*3));
+    return inner;
+  }
+  function updateMandala(g){
+    var inner;
+    if(g.k==="g1") inner=sigilConscious(S.g1);
+    else if(g.k==="g2") inner=sigilPhysics(S.g2);
+    else if(g.k==="g3") inner=sigilSurvival(S.g3);
+    else if(g.k==="g4") inner=sigilChoice(S.g4);
+    else if(g.k==="g5") inner=sigilIntensity(S.g5);
+    else if(g.k==="g6") inner=sigilNesting(S.g6);
+    setMandala("mandalaHost", inner);
+  }
+
+  // ---- ambient background: drifting starlight ----
+  (function ambient(){
+    var c = document.getElementById("bgCanvas");
+    var ctx = c.getContext("2d");
+    var pts = [];
+    function resize(){
+      c.width = innerWidth; c.height = innerHeight;
+      pts = [];
+      var n = innerWidth<500 ? 30 : 54;
+      for(var i=0;i<n;i++) pts.push({x:Math.random()*innerWidth, y:Math.random()*innerHeight, r:Math.random()*1.2+.4, s:Math.random()*.14+.03, o:Math.random()*.5+.14, p:Math.random()*6.28});
+    }
+    resize();
+    addEventListener("resize", resize);
+    function draw(t){
+      ctx.clearRect(0,0,c.width,c.height);
+      for(var i=0;i<pts.length;i++){
+        var p=pts[i];
+        if(!REDUCED){ p.y-=p.s; if(p.y<-4){p.y=c.height+4; p.x=Math.random()*c.width;} }
+        var flick = REDUCED?1:(0.65+0.35*Math.sin(t/1500+p.p));
+        ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,6.29);
+        ctx.fillStyle = (i%3===0?"rgba(134,99,19,":"rgba(113,39,145,")+(p.o*flick*0.5).toFixed(3)+")";
+        ctx.fill();
+      }
+      if(!REDUCED) requestAnimationFrame(draw);
+    }
+    requestAnimationFrame(draw);
+  })();
+
+  // ---- ring gauge (SVG) for the result reading ----
+  function ringSVG(id, size, sw){
+    var r=(size-sw)/2, c=2*Math.PI*r;
+    return '<svg width="'+size+'" height="'+size+'" viewBox="0 0 '+size+' '+size+'" style="transform:rotate(-90deg)">'+
+      '<circle cx="'+size/2+'" cy="'+size/2+'" r="'+r+'" fill="none" stroke="rgba(113,39,145,.16)" stroke-width="'+sw+'"/>'+
+      '<circle id="'+id+'" cx="'+size/2+'" cy="'+size/2+'" r="'+r+'" fill="none" stroke="#866313" stroke-width="'+sw+'" stroke-linecap="round" stroke-dasharray="'+c+'" stroke-dashoffset="'+c+'" style="transition:stroke-dashoffset .6s ease"/>'+
+      '</svg>';
+  }
+  function setRing(elId, frac){
+    var el = document.getElementById(elId); if(!el) return;
+    var r = el.r.baseVal.value, c=2*Math.PI*r;
+    el.setAttribute("stroke-dasharray", c);
+    el.setAttribute("stroke-dashoffset", c*(1-Math.max(0,Math.min(1,frac))));
+  }
+
+  // ---------- rendering ----------
+  var root = document.getElementById("screen");
+  var prog = document.getElementById("progress");
+
+  function renderProgress(){
+    if(S.screen===0 || S.screen===7){ prog.innerHTML=""; return; }
+    prog.innerHTML = G.map(function(g,i){ var idx=i+1; var cls = idx<S.screen?"done":idx===S.screen?"cur":""; return '<span class="ptick '+cls+'" title="'+g.name+'"></span>'; }).join("");
+  }
+
+  function render(){
+    renderProgress();
+    if(S.screen===0) renderHook();
+    else if(S.screen>=1 && S.screen<=6) renderGate(S.screen);
+    else renderResult();
+    window.scrollTo(0,0);
+  }
+
+  function renderHook(){
+    root.innerHTML =
+      '<div class="screen">'+
+        '<p class="eyebrow">Six questions · three minutes · no philosophy degree required</p>'+
+        '<h1 class="big">Are you living in a simulation?</h1>'+
+        '<p class="pitch">Everyone has an opinion. Almost nobody knows what they\'d actually have to believe for it to be true. Six dials. Your beliefs. One number — and the one belief that\'s secretly doing all the work.</p>'+
+        '<div class="hook-sigil" id="hookSigil"></div>'+
+        '<div class="gutbox">'+
+          '<p class="eyebrow" style="justify-content:center;margin-bottom:10px">Before we start — gut feeling</p>'+
+          '<div class="gut-num" id="gutNum">'+S.gut+'%<small>chance you\'re simulated</small></div>'+
+          '<div class="dial-wrap">'+
+          '<input type="range" min="0" max="100" step="5" value="'+S.gut+'" id="gut" aria-label="Gut feeling: chance you are simulated">'+
+          '<div class="ends"><span>Definitely real</span><span>Definitely a sim</span></div>'+
+          '</div>'+
+        '</div>'+
+        '<div class="nav"><button class="btn wide" id="start">Let\'s find out</button></div>'+
+        '<p class="foot">Built on Nick Bostrom\'s simulation argument, with the math done honestly. Your answers stay on this device.</p>'+
+      '</div>';
+    setMandala("hookSigil", sigilConscious(50));
+    var gut=document.getElementById("gut");
+    function syncGut(){ document.getElementById("gutNum").innerHTML=S.gut+'%<small>chance you\'re simulated</small>'; }
+    gut.addEventListener("input",function(){ S.gut=parseInt(gut.value,10); syncGut(); });
+    document.getElementById("start").addEventListener("click",function(){ S.screen=1; render(); });
+  }
+
+  function controlHTML(g){
+    if(g.type==="choice"){
+      return '<div class="choices">'+g.choices.map(function(c,i){ return '<button class="choice'+(S.g6===i?" on":"")+'" data-i="'+i+'"><b>'+c.t+'</b><small>'+c.d+'</small></button>'; }).join("")+'</div>';
+    }
+    return '<div class="dialval" id="val">'+valueLabel(g)+'</div>'+
+      '<div class="dial-wrap">'+
+      '<input type="range" min="0" max="100" step="10" value="'+S[g.k]+'" id="rng" aria-label="'+g.name+'">'+
+      '<div class="ends"><span>'+g.lo+'</span><span>'+g.hi+'</span></div>'+
+      '</div>';
+  }
+
+  function renderGate(n){
+    var g=G[n-1];
+    root.innerHTML =
+      '<div class="screen">'+
+        '<p class="eyebrow"><span class="gn">'+n+'</span> / 6 · '+g.name+'</p>'+
+        '<h2 class="q">'+g.q+'</h2>'+
+        '<p class="sub">'+g.sub+'</p>'+
+        '<div class="sigil-box"><div class="sigil" id="mandalaHost"></div>'+controlHTML(g)+'</div>'+
+        '<div class="translate" id="tr"><p>'+translate(g)+'</p></div>'+
+        '<div class="facts"><p class="flabel">What we know</p><ul>'+g.facts.map(function(f){return "<li>"+f+"</li>";}).join("")+'</ul></div>'+
+        '<details><summary>See the arguments</summary><div class="args">'+
+          '<div><h4 class="for">Case for</h4><ul>'+g.args.for.map(function(a){return "<li>"+a+"</li>";}).join("")+'</ul></div>'+
+          '<div><h4 class="against">Case against</h4><ul>'+g.args.against.map(function(a){return "<li>"+a+"</li>";}).join("")+'</ul></div>'+
+        '</div></details>'+
+        '<div class="nav"><button class="btn ghost" id="back">Back</button><div class="spacer"></div><button class="btn" id="next">'+(n===6?"Reveal my number":"Next")+'</button></div>'+
+      '</div>';
+    updateMandala(g);
+    if(g.type==="choice"){
+      root.querySelectorAll(".choice").forEach(function(b){ b.addEventListener("click",function(){ S.g6=parseInt(b.getAttribute("data-i"),10); root.querySelectorAll(".choice").forEach(function(x){x.classList.remove("on");}); b.classList.add("on"); document.getElementById("tr").querySelector("p").innerHTML=translate(g); updateMandala(g); }); });
+    } else {
+      var rng=document.getElementById("rng");
+      rng.addEventListener("input",function(){ S[g.k]=parseInt(rng.value,10); document.getElementById("val").textContent=valueLabel(g); document.getElementById("tr").querySelector("p").innerHTML=translate(g); updateMandala(g); });
+    }
+    document.getElementById("back").addEventListener("click",function(){ S.screen=n-1; render(); });
+    document.getElementById("next").addEventListener("click",function(){
+      if(n<=4 && S[g.k]===0 && !walled[g.k]){ showWall(g,n); return; }
+      S.screen=n+1; render();
+    });
+  }
+
+  function showWall(g,n){
+    var o=document.getElementById("overlayRoot");
+    o.innerHTML='<div class="overlay"><div class="wall"><p class="eyebrow" style="color:var(--ember)">The chain breaks here</p><h3>0%. Game over — for this argument.</h3><p>'+g.wall+'</p>'+
+      '<div class="nav" style="margin-top:0"><button class="btn ghost" id="w-yes">Yep, that\'s what I think</button><div class="spacer"></div><button class="btn" id="w-no">Hm, let me reconsider</button></div></div></div>';
+    document.getElementById("w-yes").addEventListener("click",function(){ walled[g.k]=true; o.innerHTML=""; S.screen=7; render(); });
+    document.getElementById("w-no").addEventListener("click",function(){ S[g.k]=10; o.innerHTML=""; renderGate(n); });
+  }
+
+  function famousHTML(p){
+    var you=p*100;
+    var edge=function(x){ return x<12?" lft":x>88?" rgt":""; };
+    var items=FAMOUS.map(function(f,i){ var x=Math.min(98,Math.max(2,f.p)); return '<div class="tick" tabindex="0" style="left:'+x+'%" aria-label="'+f.n+': '+f.q+'"></div><div class="tip'+edge(x)+'" style="left:'+x+'%">'+f.n+' — '+f.q+'</div><div class="lbl '+(i%2?"dn":"up")+edge(x)+'" style="left:'+x+'%">'+f.n+'</div>'; }).join("");
+    var yx=Math.min(98,Math.max(2,you));
+    items+='<div class="tick you" style="left:'+yx+'%"></div><div class="lbl you'+edge(yx)+'" style="left:'+yx+'%">you</div>';
+    var below=null,above=null;
+    FAMOUS.forEach(function(f){ if(f.p<=you && (!below||f.p>below.p)) below=f; if(f.p>you && (!above||f.p<above.p)) above=f; });
+    var sent = below&&above ? "More simulated than "+below.n+", less than "+above.n+"." : below ? "Further out than everyone here — even "+below.n+"." : "More skeptical than everyone here — even "+(above?above.n:"")+".";
+    return '<div class="scale"><div class="axis"></div>'+items+'</div><p style="margin:8px 0 0;color:var(--muted);font-family:\'Cormorant Garamond\',serif;font-style:italic">'+sent+'</p><p class="famous-note">Public statements, paraphrased. Hover a dot for the quote.</p>';
+  }
+
+  function resultMandalaHTML(m){
+    return '<div class="result-mandala-wrap">'+
+      ringSVG("resRing",220,7)+
+      '<div class="result-mandala-inner">'+svgWrap(mandalaComposite(S))+'</div>'+
+      '<div class="result-num" id="bigNum">'+fmtPct(m.final)+'</div>'+
+    '</div>';
+  }
+
+  function resultTopHTML(){
+    var m=model(S), b=binding(S), a=archetype(S);
+    var gap = Math.round(m.final*100) - S.gut;
+    var gapLine = m.wallAt ? "Your gut said "+S.gut+"%. Your logic says the argument can't even start." :
+      Math.abs(gap)<3 ? "Your gut said "+S.gut+"%. Your logic agrees. Rare." :
+      gap>0 ? "Your gut said "+S.gut+"%. Your own beliefs say <b>"+fmtPct(m.final)+"</b> — you're more of a sim than you thought." :
+              "Your gut said "+S.gut+"%. Your own beliefs say <b>"+fmtPct(m.final)+"</b> — you believe in this less than you feel it.";
+    var sharedBanner = S.shared ? '<div class="shared-banner"><span>Someone shared their result with you. This is <b>their</b> number.</span><button class="btn small" id="takeit">Take the quiz yourself</button></div>' : '';
+
+    var rows=[];
+    rows.push({t:"A simulating civilization makes, per real mind…", n:fmtMult(m.N)+" simulated"});
+    rows.push({t:"…but only <b>"+(S.g3===100?"nearly all":S.g3===0?"none":"1 in "+RATE_N[S.g3])+"</b> civilizations survive to build it", n:m.sv===0?"×0":m.sv>=0.5?"×"+m.sv:"÷"+fmtInt(1/m.sv)});
+    rows.push({t:"…and only <b>"+S.g4+"%</b> of those choose to", n:"→ "+(m.r===0?"nothing":fmtR(m.r))});
+    if(S.g6>0 && m.r>0){
+      var bTxt = m.b>=1 ? fmtInt(m.b)+" simulators' worth" : "only "+(Math.round(m.b*100)/100)+" of a simulator";
+      var nTxt = m.nestMult===Infinity ? "→ no bottom. Unbounded." : "→ ×"+(m.nestMult>=100?fmtInt(m.nestMult):Math.round(m.nestMult*10)/10)+" more minds";
+      rows.push({t:"…then the simulations build their own: each level spawns <b>"+bTxt+"</b> (tipping point: 1)"+(S.g6===1?", for three levels":", forever"), n:nTxt});
+    }
+    rows.push({t:"So <i>if</i> simulation is possible at all, the odds you're in one are", n:fmtPct(m.f), bar:m.f});
+    rows.push({t:"× your belief that it's possible at all — conscious ("+S.g1+"%) × physics ("+S.g2+"%) = <b>"+fmtPct(m.pre)+"</b>", n:fmtPct(m.final), bar:m.final, final:true});
+    var wf = rows.map(function(r,i){ return '<div class="wf-row'+(r.final?" final":"")+'"><div class="t">'+r.t+'</div><span class="n">'+r.n+'</span>'+(r.bar!==undefined?'<div class="bar"><i data-w="'+(r.bar*100)+'"></i></div>':'')+'</div>'; }).join("");
+
+    var skepticNote = (!m.wallAt && (S.g1<=50||S.g2<=50) && m.f>0.85) ? '<p class="fact" style="margin-top:18px"><b>Notice:</b> you leaned skeptical on whether this is even possible — but '+Math.min(S.g1,S.g2)+'% isn\'t “no,” it\'s “'+tenths(Math.min(S.g1,S.g2))+'.” Everything downstream of that is near-certain in your world, so that one number is your whole answer.</p>' : '';
+
+    var changeMind = m.wallAt ? '<p style="margin:0;color:var(--muted);font-family:\'Cormorant Garamond\',serif">Move <b style="color:var(--ink)">'+G[m.wallAt-1].name+'</b> off zero and the argument restarts. Right now it never begins.</p>' :
+      b.jump<0.005 ? '<p style="margin:0;color:var(--muted);font-family:\'Cormorant Garamond\',serif">Nothing moves you much. You\'ve either maxed everything, or your ceiling is already set.</p>' :
+      '<p style="margin:0;color:var(--muted);font-family:\'Cormorant Garamond\',serif">Move <b style="color:var(--ink)">'+G[b.gate-1].name+'</b> to '+MAX_LABEL[b.gate]+' and you\'d be at <b class="mono" style="color:var(--gold)">'+fmtPct(b.to)+'</b>'+(b.jump>0.2?" — that one dial owns your answer.":" — nothing else moves you as much.")+'</p>'+
+      '<div class="try"><button class="btn small" id="tryit">Try it</button>'+(S.tried?'<span class="chip">tried: '+G[S.tried-1].name+'</span><button class="btn small ghost" id="undo">Undo</button>':'')+'</div>';
+
+    return sharedBanner +
+      '<p class="eyebrow" style="justify-content:center">Your reading</p>'+
+      resultMandalaHTML(m)+
+      '<p class="result-lead">'+(m.final>0&&m.final<0.5?oneIn(m.final)+" · ":"")+'chance you\'re a simulated mind, on your own beliefs</p>'+
+      '<p class="gutcmp">'+gapLine+'</p>'+
+      '<div class="sec"><span class="tag">You are</span><p class="arch display">'+a.title+'<small>'+a.sub+'</small></p></div>'+
+      '<div class="sec"><span class="tag">How your number was built</span><div class="spine"><div class="wf">'+wf+'</div></div>'+skepticNote+'</div>'+
+      '<div class="sec"><span class="tag">Where your doubt lives</span><p style="margin:0;color:var(--muted);font-family:\'Cormorant Garamond\',serif">'+(m.wallAt?G[m.wallAt-1].wall:DOUBT[b.gate])+'</p></div>'+
+      '<div class="sec"><span class="tag">What would change your mind</span>'+changeMind+'</div>'+
+      '<div class="sec"><span class="tag">Where you land among the famous</span>'+famousHTML(m.final)+'</div>'+
+      '<div class="sec"><span class="tag">Share it</span><div class="share" id="shareBox">'+shareText().replace(/</g,"&lt;")+'</div>'+
+        '<div class="copyrow"><button class="btn" id="copy">Copy result</button><button class="btn ghost" id="copylink">Copy link only</button></div></div>';
+  }
+
+  function bindResultTop(){
+    var b=binding(S);
+    var m=model(S);
+    setRing("resRing", m.final);
+    var take=document.getElementById("takeit"); if(take) take.addEventListener("click",function(){ resetAll(); });
+    var tryBtn=document.getElementById("tryit"); if(tryBtn) tryBtn.addEventListener("click",function(){ if(!S.prevState) S.prevState={g1:S.g1,g2:S.g2,g3:S.g3,g4:S.g4,g5:S.g5,g6:S.g6}; var t=maxed(S,b.gate); S.g1=t.g1;S.g2=t.g2;S.g3=t.g3;S.g4=t.g4;S.g5=t.g5;S.g6=t.g6; S.tried=b.gate; refreshResultQuiet(true); });
+    var undo=document.getElementById("undo"); if(undo) undo.addEventListener("click",function(){ if(S.prevState){ Object.assign(S,S.prevState); S.prevState=null; } S.tried=null; refreshResultQuiet(true); });
+    document.getElementById("copy").addEventListener("click",function(){ copyText(shareText(), this, "Copied — go paste it"); });
+    document.getElementById("copylink").addEventListener("click",function(){ copyText(shareUrl(), this, "Link copied"); });
+  }
+  function resetAll(){
+    S={gut:50,g1:50,g2:50,g3:50,g4:50,g5:50,g6:0,screen:0,shared:false,tried:null}; walled={};
+    try{ history.replaceState(null,"",location.pathname+location.search); }catch(e){}
+    render();
+  }
+
+  function renderResult(){
+    var m=model(S);
+    root.innerHTML =
+      '<div class="screen"><div id="rtop">'+resultTopHTML()+'</div>'+
+        '<div class="sec"><span class="tag">Tinker</span><p style="margin:0 0 6px;color:var(--muted);font-size:.92rem;font-family:\'Cormorant Garamond\',serif">Change any answer. Everything above updates.</p><div class="tinker" id="tinker">'+tinkerHTML()+'</div></div>'+
+        '<div class="nav"><button class="btn ghost" id="retake">Start over</button></div>'+
+        '<p class="foot">Six Gates · an interactive reading of Bostrom\'s simulation argument, not a measurement. Sources: Bostrom (2003), Putnam, Dennett, Searle, Penrose, Tononi, Chalmers <i>Reality+</i>, Benatar, Ord.</p>'+
+      '</div>';
+    var wrows=root.querySelectorAll(".wf-row");
+    wrows.forEach(function(r,i){ setTimeout(function(){ r.classList.add("in"); var bar=r.querySelector(".bar i"); if(bar) setTimeout(function(){ bar.style.width=Math.max(0.5,parseFloat(bar.getAttribute("data-w")))+"%"; },80); }, 250+i*380); });
+    countUp(document.getElementById("bigNum"), m.final);
+    bindResultTop();
+    document.getElementById("retake").addEventListener("click",resetAll);
+    bindTinker();
+  }
+
+  function tinkerHTML(){
+    return G.map(function(g,i){
+      var ctl = g.type==="choice"
+        ? '<div class="mini">'+g.choices.map(function(c,j){ return '<button data-k="g6" data-v="'+j+'" class="'+(S.g6===j?"on":"")+'">'+c.t+'</button>'; }).join("")+'</div>'
+        : '<input type="range" min="0" max="100" step="10" value="'+S[g.k]+'" data-k="'+g.k+'" aria-label="'+g.name+'">';
+      return '<div class="trow"><div class="gk mono">'+g.name.slice(0,3).toUpperCase()+'</div><div><label>'+g.name+' <span class="tv mono">'+gateSetting(g)+'</span></label>'+ctl+'</div></div>';
+    }).join("");
+  }
+  function bindTinker(){
+    root.querySelectorAll("#tinker input[type=range]").forEach(function(r){
+      r.addEventListener("input",function(){ S[r.getAttribute("data-k")]=parseInt(r.value,10); S.tried=null; S.prevState=null; refreshResultQuiet(false); });
+    });
+    root.querySelectorAll("#tinker .mini button").forEach(function(b){
+      b.addEventListener("click",function(){ S.g6=parseInt(b.getAttribute("data-v"),10); S.tried=null; S.prevState=null; refreshResultQuiet(false); });
+    });
+  }
+  function syncTinker(){
+    root.querySelectorAll("#tinker .trow").forEach(function(row,i){
+      var g=G[i]; var tv=row.querySelector(".tv"); if(tv) tv.textContent=gateSetting(g);
+    });
+    root.querySelectorAll("#tinker input[type=range]").forEach(function(r){ var k=r.getAttribute("data-k"); if(parseInt(r.value,10)!==S[k]) r.value=S[k]; });
+    root.querySelectorAll("#tinker .mini button").forEach(function(b){ b.classList.toggle("on", parseInt(b.getAttribute("data-v"),10)===S.g6); });
+  }
+  function refreshResultQuiet(syncControls){
+    var y=window.scrollY;
+    quiet=true;
+    document.getElementById("rtop").innerHTML=resultTopHTML();
+    quiet=false;
+    root.querySelectorAll("#rtop .wf-row").forEach(function(r){ r.classList.add("in"); var bar=r.querySelector(".bar i"); if(bar){ bar.style.transition="none"; bar.style.width=Math.max(0.5,parseFloat(bar.getAttribute("data-w")))+"%"; } });
+    bindResultTop();
+    syncTinker();
+    window.scrollTo(0,y);
+  }
+
+  var quiet=false;
+  function countUp(el,p){
+    if(quiet || REDUCED || p===0){ el.textContent=fmtPct(p); return; }
+    var start=performance.now(), dur=1100;
+    function step(t){ var k=Math.min(1,(t-start)/dur); var e=1-Math.pow(1-k,3); el.textContent=fmtPct(p*e); if(k<1) requestAnimationFrame(step); else el.textContent=fmtPct(p); }
+    requestAnimationFrame(step);
+  }
+  function copyText(text, btn, okLabel){
+    var orig=btn.textContent;
+    function done(){ btn.textContent=okLabel; btn.classList.add("copied"); setTimeout(function(){ btn.textContent=orig; btn.classList.remove("copied"); },1800); }
+    try{ navigator.clipboard.writeText(text).then(done).catch(function(){ fallbackCopy(text,done); }); }catch(e){ fallbackCopy(text,done); }
+  }
+  function fallbackCopy(text,cb){ try{ var ta=document.createElement("textarea"); ta.value=text; ta.style.position="fixed"; ta.style.opacity="0"; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta); cb(); }catch(e){} }
+
+  document.addEventListener("keydown",function(e){ if(e.key==="Enter" && S.screen>=0 && S.screen<=6){ var n=document.getElementById("next")||document.getElementById("start"); if(n && document.activeElement.tagName!=="BUTTON") n.click(); } });
+
+  // ---------- boot ----------
+  if(decodeState(location.hash)){ S.shared=true; S.screen=7; }
+  render();
+})();
+</script>
+
+
+</body></html>
