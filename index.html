@@ -114,10 +114,11 @@ input[type=range]::-moz-range-thumb{width:25px;height:25px;border-radius:50%;bac
 .fact{margin-top:18px;font-size:1rem;color:var(--muted);padding-left:14px;border-left:2px solid var(--line);font-family:'Cormorant Garamond',serif;}
 .fact b{color:var(--ink);font-weight:600;}
 
-/* facts / arguments — a single always-visible tab strip (neutral at rest, a
-   small color dot for For/Against) opening into one persistent boxed panel,
-   replacing the old buried <details> accordion. */
-.segstrip{display:flex;gap:6px;margin:26px 0 0;padding:5px;background:var(--panel);border:1px solid var(--line2);border-radius:999px;}
+/* facts / arguments — a single optional tab strip (neutral at rest, a small
+   color dot for For/Against) opening into one boxed panel, sitting above the
+   dial so a reader can get informed before answering, not just after. */
+.seghint{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:.98rem;color:var(--muted2);margin:22px 0 10px;}
+.segstrip{display:flex;gap:6px;margin:0;padding:5px;background:var(--panel);border:1px solid var(--line2);border-radius:999px;}
 .segbtn{flex:1;font-family:'Jost',sans-serif;font-weight:600;font-size:.74rem;letter-spacing:.03em;padding:11px 8px;border-radius:999px;border:none;background:none;color:var(--ink);cursor:pointer;text-align:center;transition:.15s;}
 .segbtn .n{display:block;font-weight:500;font-size:.64rem;color:var(--muted);margin-top:2px;}
 .segbtn .dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;vertical-align:middle;position:relative;top:-1px;}
@@ -126,9 +127,10 @@ input[type=range]::-moz-range-thumb{width:25px;height:25px;border-radius:50%;bac
 .segbtn.on{background:var(--gold-soft);color:var(--ink);font-weight:700;box-shadow:inset 0 0 0 1px rgba(134,99,19,.35);}
 .segbtn.on .n{color:var(--gold);opacity:.85;}
 
-.segpanel{margin-top:12px;padding:20px 20px;border-radius:16px;background:var(--panel);border:1px solid var(--line);min-height:40px;display:flex;align-items:center;justify-content:center;transition:.15s;}
-.segpanel.empty{color:var(--muted2);font-family:'Jost',sans-serif;font-size:.85rem;text-align:center;}
-.segpanel:not(.empty){display:block;text-align:left;}
+/* collapsed to nothing at rest — no placeholder copy needed since the strip
+   itself, right under "Worth knowing before you decide:", is the only cue. */
+.segpanel.empty{display:none;}
+.segpanel{margin:12px 0 24px;padding:20px 20px;border-radius:16px;background:var(--panel);border:1px solid var(--line);text-align:left;}
 
 .flist{margin:0;padding:0;list-style:none;display:grid;gap:14px;}
 .flist li{position:relative;font-size:1rem;color:var(--muted);padding-left:18px;font-family:'Cormorant Garamond',serif;}
@@ -1146,7 +1148,6 @@ input[type=range]::-moz-range-thumb{width:25px;height:25px;border-radius:50%;bac
       against: '<div class="argcol against"><ul>'+g.args.against.map(function(a){return "<li>"+a+"</li>";}).join("")+'</ul></div>'
     };
   }
-  var SEG_EMPTY = "Tap a tab above to see what's behind your answer";
 
   function refreshTranslate(g){
     var tb = translateBox(g);
@@ -1163,17 +1164,18 @@ input[type=range]::-moz-range-thumb{width:25px;height:25px;border-radius:50%;bac
         '<p class="eyebrow"><span class="gn">'+n+'</span> / 6 · '+g.name+'</p>'+
         '<h2 class="q">'+g.q+'</h2>'+
         '<p class="sub">'+g.sub+'</p>'+
-        '<div class="sigil-box">'+
-          (showHint ? '<p class="dragtip dragtip-top" id="dragtip"><span class="arrow l">‹</span> drag to answer <span class="arrow r">›</span></p>' : '')+
-          '<div class="sigil" id="mandalaHost"></div>'+controlHTML(g)+
-        '</div>'+
-        '<div class="translate" id="tr"><div class="ratio" id="ratio">'+tb.ratio+'</div><div class="ratio-sub" id="ratiosub">'+tb.sub+'</div></div>'+
+        '<p class="seghint">Worth knowing before you decide:</p>'+
         '<div class="segstrip">'+
           '<button class="segbtn" data-seg="facts">What we know<span class="n">'+g.facts.length+' facts</span></button>'+
           '<button class="segbtn" data-seg="for"><span class="dot dot-for"></span>For<span class="n">'+g.args.for.length+' arguments</span></button>'+
           '<button class="segbtn" data-seg="against"><span class="dot dot-against"></span>Against<span class="n">'+g.args.against.length+' arguments</span></button>'+
         '</div>'+
-        '<div class="segpanel empty" id="segpanel">'+SEG_EMPTY+'</div>'+
+        '<div class="segpanel empty" id="segpanel"></div>'+
+        '<div class="sigil-box">'+
+          (showHint ? '<p class="dragtip dragtip-top" id="dragtip"><span class="arrow l">‹</span> drag to answer <span class="arrow r">›</span></p>' : '')+
+          '<div class="sigil" id="mandalaHost"></div>'+controlHTML(g)+
+        '</div>'+
+        '<div class="translate" id="tr"><div class="ratio" id="ratio">'+tb.ratio+'</div><div class="ratio-sub" id="ratiosub">'+tb.sub+'</div></div>'+
         '<div class="nav"><button class="btn ghost" id="back">Back</button><div class="spacer"></div><button class="btn" id="next">'+(n===6?"Reveal my number":"Next")+'</button></div>'+
       '</div>';
     updateMandala(g);
@@ -1199,7 +1201,7 @@ input[type=range]::-moz-range-thumb{width:25px;height:25px;border-radius:50%;bac
         root.querySelectorAll(".segbtn").forEach(function(x){x.classList.remove("on");});
         var panel = document.getElementById("segpanel");
         if(already){
-          panel.innerHTML = SEG_EMPTY;
+          panel.innerHTML = "";
           panel.classList.add("empty");
         } else {
           b.classList.add("on");
