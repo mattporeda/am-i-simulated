@@ -1,4 +1,4 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body><!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Am I Simulated?</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
@@ -361,6 +361,57 @@ input[type=range]::-moz-range-thumb{width:25px;height:25px;border-radius:50%;bac
 
   function rateVal(s){ return s===0?0 : s===100?0.99 : Math.pow(10,(s-100)/10); }
   function multVal(s){ return Math.pow(10,(s-50)/10); }
+
+  // ---------- anonymous analytics ----------
+  // No login, no cookies, no IP/PII stored by us. Fire-and-forget: if the
+  // network call fails (ad blocker, offline, not configured yet) the quiz
+  // itself is completely unaffected. Fill in ANALYTICS_URL/ANALYTICS_KEY
+  // once the Supabase project exists — until then track() is a no-op.
+  var ANALYTICS_URL = "https://acdjnrcxdjxhxudxsidn.supabase.co/rest/v1/quiz_events";
+  var ANALYTICS_KEY = "sb_publishable_dmOtaSXKHlNAhlBrmx5NUg_JGedVOLK";
+  var DEVICE = (window.matchMedia && window.matchMedia("(max-width:640px)").matches) ? "mobile" : "desktop";
+  function newSessionId(){ try{ return crypto.randomUUID(); }catch(e){ return "s"+Date.now()+Math.random().toString(36).slice(2); } }
+  var SESSION_ID = newSessionId();
+  var COMPLETE_TRACKED = false;
+  var TINKER_SNAPSHOT = null;
+  var TINKERED = false;
+  var TINKER_SENDING = false;
+  function track(event_type, extra){
+    if(!ANALYTICS_URL || ANALYTICS_URL.indexOf("YOUR_SUPABASE")>-1) return;
+    try{
+      var row = {session_id:SESSION_ID, event_type:event_type, device:DEVICE};
+      if(extra) for(var k in extra) row[k]=extra[k];
+      fetch(ANALYTICS_URL, {
+        method:"POST",
+        keepalive:true,
+        headers:{
+          "Content-Type":"application/json",
+          "apikey":ANALYTICS_KEY,
+          "Authorization":"Bearer "+ANALYTICS_KEY,
+          "Prefer":"return=minimal"
+        },
+        body: JSON.stringify([row])
+      }).catch(function(){});
+    }catch(e){}
+  }
+  // "did they change anything after seeing their result" — true the moment
+  // any gate differs from the snapshot taken when the result screen first
+  // rendered, however they changed it (Tinker sliders or the Try-it button).
+  function markTinkered(){
+    if(!TINKER_SNAPSHOT) return;
+    var o=TINKER_SNAPSHOT;
+    TINKERED = (S.g1!==o.g1||S.g2!==o.g2||S.g3!==o.g3||S.g4!==o.g4||S.g5!==o.g5||S.g6!==o.g6);
+  }
+  function flushTinker(){
+    if(!TINKERED || TINKER_SENDING) return;
+    TINKER_SENDING = true;
+    try{
+      var m=model(S);
+      track("tinker",{screen:7, data:{g1:S.g1,g2:S.g2,g3:S.g3,g4:S.g4,g5:S.g5,g6:S.g6,final_pct:m.final}});
+    }catch(e){}
+  }
+  document.addEventListener("visibilitychange", function(){ if(document.hidden) flushTinker(); else TINKER_SENDING=false; });
+  window.addEventListener("pagehide", flushTinker);
 
   // ---------- state ----------
   var S = {gut:50, g1:50, g2:50, g3:50, g4:50, g5:50, g6:0, screen:0, shared:false, tried:null};
@@ -1123,7 +1174,7 @@ input[type=range]::-moz-range-thumb{width:25px;height:25px;border-radius:50%;bac
     var gut=document.getElementById("gut");
     function syncGut(){ document.getElementById("gutNum").innerHTML=S.gut+'%'; setMandala("hookSigil", sigilGutFeel(S.gut)); }
     gut.addEventListener("input",function(){ S.gut=parseInt(gut.value,10); syncGut(); });
-    document.getElementById("start").addEventListener("click",function(){ S.screen=1; render(); });
+    document.getElementById("start").addEventListener("click",function(){ track("progress",{screen:0,gate_key:"gut",value:S.gut}); S.screen=1; render(); });
   }
 
   function controlHTML(g){
@@ -1213,6 +1264,7 @@ input[type=range]::-moz-range-thumb{width:25px;height:25px;border-radius:50%;bac
     document.getElementById("back").addEventListener("click",function(){ S.screen=n-1; render(); });
     document.getElementById("next").addEventListener("click",function(){
       if(n<=4 && S[g.k]===0 && !walled[g.k]){ showWall(g,n); return; }
+      track("progress",{screen:n,gate_key:g.k,value:(g.type==="choice"?S.g6:S[g.k])});
       S.screen=n+1; render();
     });
   }
@@ -1221,7 +1273,7 @@ input[type=range]::-moz-range-thumb{width:25px;height:25px;border-radius:50%;bac
     var o=document.getElementById("overlayRoot");
     o.innerHTML='<div class="overlay"><div class="wall"><p class="eyebrow" style="color:var(--ember)">The chain breaks here</p><h3>0%. Game over — for this argument.</h3><p>'+g.wall+'</p>'+
       '<div class="nav" style="margin-top:0"><button class="btn ghost" id="w-yes">Yep, that\'s what I think</button><div class="spacer"></div><button class="btn" id="w-no">Hm, let me reconsider</button></div></div></div>';
-    document.getElementById("w-yes").addEventListener("click",function(){ walled[g.k]=true; o.innerHTML=""; S.screen=7; render(); });
+    document.getElementById("w-yes").addEventListener("click",function(){ walled[g.k]=true; track("progress",{screen:n,gate_key:g.k,value:0,walled:true}); o.innerHTML=""; S.screen=7; render(); });
     document.getElementById("w-no").addEventListener("click",function(){ S[g.k]=10; o.innerHTML=""; renderGate(n); });
   }
 
@@ -1293,19 +1345,34 @@ input[type=range]::-moz-range-thumb{width:25px;height:25px;border-radius:50%;bac
     var m=model(S);
     setRing("resRing", m.final);
     var take=document.getElementById("takeit"); if(take) take.addEventListener("click",function(){ resetAll(); });
-    var tryBtn=document.getElementById("tryit"); if(tryBtn) tryBtn.addEventListener("click",function(){ if(!S.prevState) S.prevState={g1:S.g1,g2:S.g2,g3:S.g3,g4:S.g4,g5:S.g5,g6:S.g6}; var t=maxed(S,b.gate); S.g1=t.g1;S.g2=t.g2;S.g3=t.g3;S.g4=t.g4;S.g5=t.g5;S.g6=t.g6; S.tried=b.gate; refreshResultQuiet(true); });
-    var undo=document.getElementById("undo"); if(undo) undo.addEventListener("click",function(){ if(S.prevState){ Object.assign(S,S.prevState); S.prevState=null; } S.tried=null; refreshResultQuiet(true); });
+    var tryBtn=document.getElementById("tryit"); if(tryBtn) tryBtn.addEventListener("click",function(){ if(!S.prevState) S.prevState={g1:S.g1,g2:S.g2,g3:S.g3,g4:S.g4,g5:S.g5,g6:S.g6}; var t=maxed(S,b.gate); S.g1=t.g1;S.g2=t.g2;S.g3=t.g3;S.g4=t.g4;S.g5=t.g5;S.g6=t.g6; S.tried=b.gate; markTinkered(); refreshResultQuiet(true); });
+    var undo=document.getElementById("undo"); if(undo) undo.addEventListener("click",function(){ if(S.prevState){ Object.assign(S,S.prevState); S.prevState=null; } S.tried=null; markTinkered(); refreshResultQuiet(true); });
     document.getElementById("copy").addEventListener("click",function(){ copyText(shareText(), this, "Copied — go paste it"); });
     document.getElementById("copylink").addEventListener("click",function(){ copyText(shareUrl(), this, "Link copied"); });
   }
   function resetAll(){
     S={gut:50,g1:50,g2:50,g3:50,g4:50,g5:50,g6:0,screen:0,shared:false,tried:null}; walled={};
+    SESSION_ID=newSessionId(); COMPLETE_TRACKED=false; TINKER_SNAPSHOT=null; TINKERED=false; TINKER_SENDING=false;
+    track("start",{screen:0});
     try{ history.replaceState(null,"",location.pathname+location.search); }catch(e){}
     render();
   }
 
   function renderResult(){
     var m=model(S);
+    if(!S.shared && !COMPLETE_TRACKED){
+      COMPLETE_TRACKED = true;
+      TINKER_SNAPSHOT = {g1:S.g1,g2:S.g2,g3:S.g3,g4:S.g4,g5:S.g5,g6:S.g6};
+      try{
+        var _a=archetype(S), _b=binding(S);
+        track("complete",{screen:7, data:{
+          gut:S.gut, g1:S.g1,g2:S.g2,g3:S.g3,g4:S.g4,g5:S.g5,g6:S.g6,
+          final_pct:m.final, archetype:_a.title,
+          binding_gate: (!m.wallAt && _b && G[_b.gate-1]) ? G[_b.gate-1].name : null,
+          walled: !!m.wallAt, walled_gate: m.wallAt ? G[m.wallAt-1].name : null
+        }});
+      }catch(e){}
+    }
     root.innerHTML =
       '<div class="screen"><div id="rtop">'+resultTopHTML()+'</div>'+
         '<div class="sec"><span class="tag">Tinker</span><p style="margin:0 0 6px;color:var(--muted);font-size:.92rem;font-family:\'Cormorant Garamond\',serif">Change any answer. Everything above updates.</p><div class="tinker" id="tinker">'+tinkerHTML()+'</div></div>'+
@@ -1330,10 +1397,10 @@ input[type=range]::-moz-range-thumb{width:25px;height:25px;border-radius:50%;bac
   }
   function bindTinker(){
     root.querySelectorAll("#tinker input[type=range]").forEach(function(r){
-      r.addEventListener("input",function(){ S[r.getAttribute("data-k")]=parseInt(r.value,10); S.tried=null; S.prevState=null; refreshResultQuiet(false); });
+      r.addEventListener("input",function(){ S[r.getAttribute("data-k")]=parseInt(r.value,10); S.tried=null; S.prevState=null; markTinkered(); refreshResultQuiet(false); });
     });
     root.querySelectorAll("#tinker .mini button").forEach(function(b){
-      b.addEventListener("click",function(){ S.g6=parseInt(b.getAttribute("data-v"),10); S.tried=null; S.prevState=null; refreshResultQuiet(false); });
+      b.addEventListener("click",function(){ S.g6=parseInt(b.getAttribute("data-v"),10); S.tried=null; S.prevState=null; markTinkered(); refreshResultQuiet(false); });
     });
   }
   function syncTinker(){
@@ -1372,9 +1439,10 @@ input[type=range]::-moz-range-thumb{width:25px;height:25px;border-radius:50%;bac
 
   // ---------- boot ----------
   if(decodeState(location.hash)){ S.shared=true; S.screen=7; }
+  if(!S.shared){ track("start",{screen:0}); }
   render();
 })();
 </script>
 
 
-</body></html></body></html>
+</body></html>
