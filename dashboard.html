@@ -122,10 +122,23 @@ h1{font-size:clamp(1.5rem,4vw,2.1rem);font-weight:600;font-style:italic;margin:0
 .devlegend{display:flex;gap:16px;margin-top:10px;font-size:.78rem;color:var(--muted);}
 .devlegend .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:middle;}
 
+/* section header with an action (daily volume's table toggle) */
+.sechead{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:2px;}
+.sechead .sechint{margin-bottom:0;}
+.btn.small{font-size:.68rem;padding:6px 14px;}
+
 /* daily volume */
-.volchart{display:flex;align-items:flex-end;gap:3px;height:110px;}
-.volbar{flex:1;display:flex;flex-direction:column;justify-content:flex-end;gap:1px;min-width:3px;}
-.volbar .seg{border-radius:2px 2px 0 0;}
+.volwrap{position:relative;overflow-x:auto;padding-bottom:2px;}
+.volchart{display:flex;align-items:flex-end;gap:4px;height:130px;min-width:100%;}
+.volbar{position:relative;flex:0 0 14px;width:14px;height:130px;border-radius:3px 3px 0 0;cursor:pointer;}
+.volbar:focus-visible{outline:2px solid var(--violet);outline-offset:2px;}
+.volbar .seg{position:absolute;left:0;right:0;bottom:0;border-radius:3px 3px 0 0;}
+.volbar .seg.start{background:var(--violet-soft);}
+.volbar .seg.complete{background:var(--gold);}
+.volbar:hover .seg.start,.volbar:focus-visible .seg.start{filter:brightness(.94);}
+.voltip{position:absolute;bottom:calc(100% + 8px);transform:translateX(-50%);background:var(--ink);color:var(--surface);font-size:.74rem;line-height:1.45;padding:7px 10px;border-radius:8px;white-space:nowrap;pointer-events:none;box-shadow:0 4px 10px var(--shadow);z-index:2;}
+.voltip b{font-variant-numeric:tabular-nums;}
+.voltip::after{content:"";position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:var(--ink);}
 .vollegend{display:flex;gap:16px;margin-top:10px;font-size:.78rem;color:var(--muted);}
 .vollegend .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:middle;}
 
@@ -227,21 +240,34 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;}
       <div class="card"><div class="barlist" id="wallChart"></div></div>
     </div>
 
-    <div class="tworow sec">
-      <div>
-        <h2>Device</h2>
-        <p class="sechint">Completed quizzes, by device.</p>
-        <div class="card">
-          <div class="devsplit"><div class="devbar" id="devBar"></div></div>
-          <div class="devlegend" id="devLegend"></div>
-        </div>
+    <div class="sec">
+      <h2>Device</h2>
+      <p class="sechint">Completed quizzes, by device.</p>
+      <div class="card">
+        <div class="devsplit"><div class="devbar" id="devBar"></div></div>
+        <div class="devlegend" id="devLegend"></div>
       </div>
-      <div>
-        <h2>Daily volume</h2>
-        <p class="sechint">Landed vs. completed, per day.</p>
-        <div class="card">
+    </div>
+
+    <div class="sec">
+      <div class="sechead">
+        <div>
+          <h2>Traffic over time</h2>
+          <p class="sechint">Visits vs. completions, per day — from your very first visit.</p>
+        </div>
+        <button type="button" class="btn ghost small" id="volTableToggle">View as table</button>
+      </div>
+      <div class="card">
+        <div class="volwrap" id="volWrap">
           <div class="volchart" id="volChart"></div>
-          <div class="vollegend" id="volLegend"></div>
+          <div class="voltip" id="volTip" hidden></div>
+        </div>
+        <div class="vollegend" id="volLegend"></div>
+        <div class="tablewrap" id="volTableWrap" hidden>
+          <table id="volTable">
+            <thead><tr><th>Day</th><th class="num">Landed</th><th class="num">Completed</th><th class="num">Rate</th></tr></thead>
+            <tbody></tbody>
+          </table>
         </div>
       </div>
     </div>
@@ -368,34 +394,82 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;}
       '<span><span class="dot" style="background:var(--gold)"></span>Desktop — '+fmtInt(desktop)+'</span>';
   }
 
+  var volTip = null;
+  function showVolTip(bar, dateLabel, start, complete){
+    if(!volTip) volTip = document.getElementById("volTip");
+    if(!volTip) return;
+    volTip.innerHTML = "";
+    var line1 = document.createElement("div");
+    line1.textContent = dateLabel;
+    var line2 = document.createElement("div");
+    var b1 = document.createElement("b"); b1.textContent = fmtInt(start);
+    line2.appendChild(document.createTextNode("Landed: "));
+    line2.appendChild(b1);
+    var line3 = document.createElement("div");
+    var b2 = document.createElement("b"); b2.textContent = fmtInt(complete);
+    line3.appendChild(document.createTextNode("Completed: "));
+    line3.appendChild(b2);
+    volTip.appendChild(line1); volTip.appendChild(line2); volTip.appendChild(line3);
+    volTip.style.left = (bar.offsetLeft + bar.offsetWidth/2) + "px";
+    volTip.hidden = false;
+  }
+  function hideVolTip(){ if(volTip) volTip.hidden = true; }
+
   function renderVolume(rows){
     var host = document.getElementById("volChart");
     var legend = document.getElementById("volLegend");
+    var tbody = document.querySelector("#volTable tbody");
     if(!host || !legend) return;
-    if(!rows.length){ host.innerHTML = '<p class="empty">No activity yet.</p>'; return; }
+    if(!rows.length){ host.innerHTML = '<p class="empty">No activity yet.</p>'; legend.innerHTML = ""; if(tbody) tbody.innerHTML = ""; return; }
     var days = {};
     rows.forEach(function(r){ days[r.day] = days[r.day] || {start:0, complete:0}; if(r.event_type==="start") days[r.day].start += r.n; if(r.event_type==="complete") days[r.day].complete += r.n; });
-    var keys = Object.keys(days).sort().slice(-30);
+    // full history, starting with the first day there's any data — no cap,
+    // the chart scrolls horizontally once there are more days than fit.
+    var keys = Object.keys(days).sort();
     var max = Math.max.apply(null, keys.map(function(k){ return days[k].start; }).concat([1]));
-    host.innerHTML = keys.map(function(k){
-      return '<div class="volbar" title="'+k+'" style="height:100%"></div>';
-    }).join("");
-    var bars = host.querySelectorAll(".volbar");
-    keys.forEach(function(k,i){
+
+    host.innerHTML = "";
+    keys.forEach(function(k){
       var d = days[k];
-      var hStart = Math.max(1, Math.round(d.start/max*100));
-      var hComplete = Math.max(0, Math.round(d.complete/max*100));
+      var hStart = Math.max(1, Math.round(d.start/max*126));
+      var hComplete = d.complete ? Math.max(1, Math.round(d.complete/max*126)) : 0;
+      var dateLabel = new Date(k+"T00:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});
+
+      var wrap = document.createElement("div");
+      wrap.className = "volbar";
+      wrap.tabIndex = 0;
+      wrap.setAttribute("role","img");
+      wrap.setAttribute("aria-label", dateLabel+": "+fmtInt(d.start)+" landed, "+fmtInt(d.complete)+" completed");
+
       var base = document.createElement("div");
-      base.className = "seg"; base.style.height = hStart+"px"; base.style.background = "var(--violet-soft)";
-      bars[i].appendChild(base);
+      base.className = "seg start"; base.style.height = hStart+"px";
+      wrap.appendChild(base);
       if(hComplete>0){
         var seg = document.createElement("div");
-        seg.className = "seg"; seg.style.height = hComplete+"px"; seg.style.background = "var(--gold)";
-        bars[i].appendChild(seg);
+        seg.className = "seg complete"; seg.style.height = hComplete+"px";
+        wrap.appendChild(seg);
       }
+      wrap.addEventListener("pointerenter", function(){ showVolTip(wrap, dateLabel, d.start, d.complete); });
+      wrap.addEventListener("focus", function(){ showVolTip(wrap, dateLabel, d.start, d.complete); });
+      wrap.addEventListener("pointerleave", hideVolTip);
+      wrap.addEventListener("blur", hideVolTip);
+      host.appendChild(wrap);
     });
+    // scroll to the most recent day
+    var volWrap = document.getElementById("volWrap");
+    if(volWrap) volWrap.scrollLeft = volWrap.scrollWidth;
+
     legend.innerHTML = '<span><span class="dot" style="background:var(--violet-soft)"></span>Landed</span>'+
       '<span><span class="dot" style="background:var(--gold)"></span>Completed</span>';
+
+    if(tbody){
+      tbody.innerHTML = keys.slice().reverse().map(function(k){
+        var d = days[k];
+        var when = new Date(k+"T00:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});
+        var rate = d.start ? fmtPct1(d.complete/d.start*100) : "—";
+        return '<tr><td>'+when+'</td><td class="num">'+fmtInt(d.start)+'</td><td class="num">'+fmtInt(d.complete)+'</td><td class="num">'+rate+'</td></tr>';
+      }).join("");
+    }
   }
 
   function renderTinkerTable(rows){
@@ -505,6 +579,16 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;}
   }
 
   document.getElementById("refresh").addEventListener("click", loadDashboard);
+  document.getElementById("volTableToggle").addEventListener("click", function(){
+    var chartCard = document.getElementById("volWrap");
+    var legend = document.getElementById("volLegend");
+    var tableWrap = document.getElementById("volTableWrap");
+    var showingTable = !tableWrap.hidden;
+    tableWrap.hidden = showingTable;
+    chartCard.hidden = !showingTable;
+    legend.hidden = !showingTable;
+    this.textContent = showingTable ? "View as table" : "View as chart";
+  });
   document.getElementById("signout").addEventListener("click", async function(){
     await client.auth.signOut();
     showLogin();
